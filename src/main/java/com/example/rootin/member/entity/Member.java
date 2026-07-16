@@ -54,6 +54,12 @@ public class Member {
     @Column(name = "profile_completed", nullable = false)
     private boolean profileCompleted = false;
 
+    @Column(name = "refresh_token", length = 500)
+    private String refreshToken;
+
+    @Column(name = "refresh_token_expires_at")
+    private LocalDateTime refreshTokenExpiresAt;
+
     private Member(
             String provider,
             String providerId,
@@ -102,5 +108,18 @@ public class Member {
         this.ageGroup = ageGroup;
         this.interestField = String.join(",", interestFields);
         this.profileCompleted = true;
+    }
+
+    public void updateRefreshToken(
+            String refreshToken,
+            LocalDateTime refreshTokenExpiresAt
+    ) {
+        this.refreshToken = refreshToken;
+        this.refreshTokenExpiresAt = refreshTokenExpiresAt;
+    }
+
+    public void clearRefreshToken() {
+        this.refreshToken = null;
+        this.refreshTokenExpiresAt = null;
     }
 }
