@@ -1,11 +1,11 @@
 package com.example.rootin.member.service;
 
 import com.example.rootin.global.jwt.JwtTokenProvider;
-import com.example.rootin.member.dto.request.RefreshTokenRequestDto;
+import com.example.rootin.member.domain.OAuthProvider;
 import com.example.rootin.member.dto.response.MemberResponseDto;
-import com.example.rootin.member.repository.MemberRepository;
 import com.example.rootin.member.dto.response.TokenResponseDto;
 import com.example.rootin.member.entity.Member;
+import com.example.rootin.member.repository.MemberRepository;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,9 +17,8 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.Date;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 
 @Service
 @RequiredArgsConstructor
@@ -31,115 +30,114 @@ public class OAuthService {
     private final WebClient webClient = WebClient.create();
 
     @Value("${kakao.client-id}")
-    private String KAKAO_CLIENT_ID;
+    private String kakaoClientId;
 
     @Value("${kakao.client-secret}")
-    private String KAKAO_CLIENT_SECRET;
+    private String kakaoClientSecret;
 
     @Value("${kakao.redirect-uri}")
-    private String KAKAO_REDIRECT_URI;
+    private String kakaoRedirectUri;
+
+    @Value("${google.client-id}")
+    private String googleClientId;
+
+    @Value("${google.client-secret}")
+    private String googleClientSecret;
+
+    @Value("${google.redirect-uri}")
+    private String googleRedirectUri;
 
     @Transactional
-    public TokenResponseDto kakaoLogin(String code) {
-        String kakaoAccessToken = requestKakaoAccessToken(code);
+    public TokenIssueResult kakaoLogin(String code) {
+        String accessToken = requestKakaoAccessToken(normalizeCode(code));
+        KakaoUserInfo userInfo = requestKakaoUserInfo(accessToken);
 
-        KakaoUserInfo kakaoUserInfo = requestKakaoUserInfo(kakaoAccessToken);
+        String providerId = String.valueOf(userInfo.id());
+        String email = getEmail(userInfo);
+        String imageUrl = getProfileImage(userInfo);
 
-        String providerId = String.valueOf(kakaoUserInfo.id());
-
-        String email = getEmail(kakaoUserInfo);
-        String imageUrl = getProfileImage(kakaoUserInfo);
-
-        MemberSearchResult searchResult =
-                findOrCreateMember(
-                        providerId,
-                        email,
-                        imageUrl
-                );
-
-        Member member = searchResult.member();
-
-        String accessToken =
-                jwtTokenProvider.createAccessToken(member);
-        String refreshToken =
-                jwtTokenProvider.createRefreshToken(member);
-
-        member.updateRefreshToken(
-                refreshToken,
-                calculateRefreshTokenExpiresAt()
-        );
-
-        return new TokenResponseDto(
-                accessToken,
-                refreshToken,
-                "Bearer",
-                searchResult.newMember(),
-                MemberResponseDto.from(member)
-        );
-
+        return issueTokens(OAuthProvider.KAKAO, providerId, email, imageUrl);
     }
 
     @Transactional
-    public TokenResponseDto reissue(RefreshTokenRequestDto request) {
-        String refreshToken = request.getRefreshToken();
+    public TokenIssueResult googleLogin(String code) {
+        String accessToken = requestGoogleAccessToken(normalizeCode(code));
+        GoogleUserInfo userInfo = requestGoogleUserInfo(accessToken);
 
+        return issueTokens(
+                OAuthProvider.GOOGLE,
+                userInfo.sub(),
+                userInfo.email(),
+                userInfo.picture()
+        );
+    }
+
+    @Transactional
+    public TokenIssueResult reissue(String refreshToken) {
         if (refreshToken == null || refreshToken.isBlank()) {
-            throw new IllegalArgumentException("refreshToken을 입력해주세요.");
+            throw new IllegalArgumentException("refreshToken cookie is missing.");
         }
 
         if (!jwtTokenProvider.validateToken(refreshToken)) {
-            throw new IllegalArgumentException("유효하지 않거나 만료된 refresh token입니다.");
+            throw new IllegalArgumentException("Invalid or expired refresh token.");
         }
 
         Long memberId = jwtTokenProvider.getMemberId(refreshToken);
         Member member =
                 memberRepository.findById(memberId)
                         .orElseThrow(() ->
-                                new IllegalArgumentException("회원 정보를 찾을 수 없습니다.")
+                                new IllegalArgumentException("Member not found.")
                         );
-
-        if (
-                member.getRefreshToken() == null
-                        || !member.getRefreshToken().equals(refreshToken)
-        ) {
-            throw new IllegalArgumentException("refresh token이 일치하지 않습니다.");
-        }
-
-        if (
-                member.getRefreshTokenExpiresAt() == null
-                        || member.getRefreshTokenExpiresAt().isBefore(LocalDateTime.now())
-        ) {
-            member.clearRefreshToken();
-            throw new IllegalArgumentException("만료된 refresh token입니다.");
-        }
 
         String newAccessToken = jwtTokenProvider.createAccessToken(member);
         String newRefreshToken = jwtTokenProvider.createRefreshToken(member);
 
-        member.updateRefreshToken(
-                newRefreshToken,
-                calculateRefreshTokenExpiresAt()
-        );
-
-        return new TokenResponseDto(
-                newAccessToken,
-                newRefreshToken,
-                "Bearer",
-                false,
-                MemberResponseDto.from(member)
+        return new TokenIssueResult(
+                new TokenResponseDto(
+                        newAccessToken,
+                        "Bearer",
+                        false,
+                        MemberResponseDto.from(member)
+                ),
+                newRefreshToken
         );
     }
 
-    private String requestKakaoAccessToken( String code) {
+    private TokenIssueResult issueTokens(
+            String provider,
+            String providerId,
+            String email,
+            String imageUrl
+    ) {
+        MemberSearchResult searchResult =
+                findOrCreateMember(provider, providerId, email, imageUrl);
+
+        Member member = searchResult.member();
+
+        String accessToken = jwtTokenProvider.createAccessToken(member);
+        String refreshToken = jwtTokenProvider.createRefreshToken(member);
+
+        return new TokenIssueResult(
+                new TokenResponseDto(
+                        accessToken,
+                        "Bearer",
+                        searchResult.newMember(),
+                        MemberResponseDto.from(member)
+                ),
+                refreshToken
+        );
+    }
+
+    private String requestKakaoAccessToken(String code) {
         MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
 
         body.add("grant_type", "authorization_code");
-        body.add("client_id", KAKAO_CLIENT_ID);
-        body.add("redirect_uri", KAKAO_REDIRECT_URI);
+        body.add("client_id", kakaoClientId);
+        body.add("redirect_uri", kakaoRedirectUri);
         body.add("code", code);
 
-        if (KAKAO_CLIENT_SECRET != null && !KAKAO_CLIENT_SECRET.isBlank()) {
-            body.add( "client_secret", KAKAO_CLIENT_SECRET);
+        if (kakaoClientSecret != null && !kakaoClientSecret.isBlank()) {
+            body.add("client_secret", kakaoClientSecret);
         }
 
         KakaoTokenResponse response =
@@ -151,56 +149,110 @@ public class OAuthService {
                         .bodyToMono(KakaoTokenResponse.class)
                         .block();
 
-        if (response == null || response.accessToken() == null
-        ) {
-            throw new IllegalArgumentException("카카오 Access Token 발급에 실패했습니다.");
+        if (response == null || response.accessToken() == null) {
+            throw new IllegalArgumentException("Failed to issue Kakao access token.");
         }
 
         return response.accessToken();
+    }
+
+    private String normalizeCode(String code) {
+        if (code == null || code.isBlank()) {
+            return code;
+        }
+
+        if (!code.contains("%")) {
+            return code;
+        }
+
+        return URLDecoder.decode(code, StandardCharsets.UTF_8);
     }
 
     private KakaoUserInfo requestKakaoUserInfo(String accessToken) {
         KakaoUserInfo response =
                 webClient.get()
                         .uri("https://kapi.kakao.com/v2/user/me")
-                        .header("Authorization",
-                                "Bearer " + accessToken)
+                        .header("Authorization", "Bearer " + accessToken)
                         .retrieve()
                         .bodyToMono(KakaoUserInfo.class)
                         .block();
 
         if (response == null) {
-            throw new IllegalArgumentException("카카오 사용자 정보를 조회하지 못했습니다.");
+            throw new IllegalArgumentException("Failed to fetch Kakao user info.");
         }
 
         return response;
     }
 
-    private MemberSearchResult findOrCreateMember(String providerId, String email, String imageUrl) {
+    private String requestGoogleAccessToken(String code) {
+        MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
+
+        body.add("grant_type", "authorization_code");
+        body.add("client_id", googleClientId);
+        body.add("redirect_uri", googleRedirectUri);
+        body.add("code", code);
+
+        if (googleClientSecret != null && !googleClientSecret.isBlank()) {
+            body.add("client_secret", googleClientSecret);
+        }
+
+        GoogleTokenResponse response =
+                webClient.post()
+                        .uri("https://oauth2.googleapis.com/token")
+                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                        .body(BodyInserters.fromFormData(body))
+                        .retrieve()
+                        .bodyToMono(GoogleTokenResponse.class)
+                        .block();
+
+        if (response == null || response.accessToken() == null) {
+            throw new IllegalArgumentException("Failed to issue Google access token.");
+        }
+
+        return response.accessToken();
+    }
+
+    private GoogleUserInfo requestGoogleUserInfo(String accessToken) {
+        GoogleUserInfo response =
+                webClient.get()
+                        .uri("https://openidconnect.googleapis.com/v1/userinfo")
+                        .header("Authorization", "Bearer " + accessToken)
+                        .retrieve()
+                        .bodyToMono(GoogleUserInfo.class)
+                        .block();
+
+        if (response == null) {
+            throw new IllegalArgumentException("Failed to fetch Google user info.");
+        }
+
+        return response;
+    }
+
+    private MemberSearchResult findOrCreateMember(
+            String provider,
+            String providerId,
+            String email,
+            String imageUrl
+    ) {
         return memberRepository
-                .findByProviderAndProviderId("KAKAO", providerId)
+                .findByProviderAndProviderId(provider, providerId)
                 .map(member -> {
                     member.updateOAuthInfo(email, imageUrl);
-
                     return new MemberSearchResult(member, false);
                 })
                 .orElseGet(() -> {
-                    Member newMember = Member.createKakaoMember(providerId, email, imageUrl);
+                    Member newMember =
+                            OAuthProvider.KAKAO.equals(provider)
+                                    ? Member.createKakaoMember(providerId, email, imageUrl)
+                                    : Member.createGoogleMember(providerId, email, imageUrl);
 
                     return new MemberSearchResult(memberRepository.save(newMember), true);
                 });
     }
 
-    private LocalDateTime calculateRefreshTokenExpiresAt() {
-        return LocalDateTime.ofInstant(
-                new Date(
-                        System.currentTimeMillis()
-                                + jwtTokenProvider.getRefreshExpiration()
-                ).toInstant(),
-                ZoneId.systemDefault()
-        );
+    public long getRefreshTokenMaxAgeSeconds() {
+        return jwtTokenProvider.getRefreshExpiration() / 1000;
     }
-
 
     private String getEmail(KakaoUserInfo userInfo) {
         if (userInfo.kakaoAccount() == null) {
@@ -215,31 +267,52 @@ public class OAuthService {
             return null;
         }
 
-        return userInfo
-                .kakaoAccount()
-                .profile()
-                .profileImageUrl();
+        return userInfo.kakaoAccount().profile().profileImageUrl();
     }
 
     private record MemberSearchResult(
-            Member member, boolean newMember
-    ) { }
+            Member member,
+            boolean newMember
+    ) {
+    }
 
+    public record TokenIssueResult(
+            TokenResponseDto response,
+            String refreshToken
+    ) {
+    }
 
     private record KakaoTokenResponse(
             @JsonProperty("access_token") String accessToken
-    ) { }
+    ) {
+    }
 
     private record KakaoUserInfo(
             Long id,
             @JsonProperty("kakao_account") KakaoAccount kakaoAccount
-    ) { }
+    ) {
+    }
 
     private record KakaoAccount(
-            String email, KakaoProfile profile
-    ) { }
+            String email,
+            KakaoProfile profile
+    ) {
+    }
 
     private record KakaoProfile(
             @JsonProperty("profile_image_url") String profileImageUrl
-    ) { }
+    ) {
+    }
+
+    private record GoogleTokenResponse(
+            @JsonProperty("access_token") String accessToken
+    ) {
+    }
+
+    private record GoogleUserInfo(
+            String sub,
+            String email,
+            String picture
+    ) {
+    }
 }
