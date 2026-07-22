@@ -23,7 +23,6 @@ public class MemberResponseDto {
     private Long point;
     private Integer streakDays;
     private String role;
-    private boolean profileCompleted;
 
     public static MemberResponseDto from(Member member) {
         List<String> interests =
@@ -44,8 +43,7 @@ public class MemberResponseDto {
                 interests,
                 member.getPoint(),
                 member.getStreakDays(),
-                member.getRole(),
-                member.isProfileCompleted()
+                member.getRole()
         );
     }
 }

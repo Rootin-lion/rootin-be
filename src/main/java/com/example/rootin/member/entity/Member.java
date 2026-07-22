@@ -1,12 +1,13 @@
 package com.example.rootin.member.entity;
 
 import jakarta.persistence.*;
+import com.example.rootin.member.domain.OAuthProvider;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
 import java.util.List;
+import java.time.LocalDateTime;
 
 @Getter
 @Entity
@@ -51,14 +52,6 @@ public class Member {
     @Column(nullable = false, length = 20)
     private String role = "ROLE_MEMBER";
 
-    @Column(name = "profile_completed", nullable = false)
-    private boolean profileCompleted = false;
-
-    @Column(name = "refresh_token", length = 500)
-    private String refreshToken;
-
-    @Column(name = "refresh_token_expires_at")
-    private LocalDateTime refreshTokenExpiresAt;
 
     private Member(
             String provider,
@@ -78,12 +71,24 @@ public class Member {
             String email,
             String imgUrl
     ) {
-        return new Member(
-                "KAKAO",
-                providerId,
-                email,
-                imgUrl
-        );
+        return createOAuthMember(OAuthProvider.KAKAO, providerId, email, imgUrl);
+    }
+
+    public static Member createGoogleMember(
+            String providerId,
+            String email,
+            String imgUrl
+    ) {
+        return createOAuthMember(OAuthProvider.GOOGLE, providerId, email, imgUrl);
+    }
+
+    public static Member createOAuthMember(
+            String provider,
+            String providerId,
+            String email,
+            String imgUrl
+    ) {
+        return new Member(provider, providerId, email, imgUrl);
     }
 
     public void updateOAuthInfo(
@@ -107,19 +112,6 @@ public class Member {
         this.nickname = nickname;
         this.ageGroup = ageGroup;
         this.interestField = String.join(",", interestFields);
-        this.profileCompleted = true;
     }
 
-    public void updateRefreshToken(
-            String refreshToken,
-            LocalDateTime refreshTokenExpiresAt
-    ) {
-        this.refreshToken = refreshToken;
-        this.refreshTokenExpiresAt = refreshTokenExpiresAt;
-    }
-
-    public void clearRefreshToken() {
-        this.refreshToken = null;
-        this.refreshTokenExpiresAt = null;
-    }
 }
