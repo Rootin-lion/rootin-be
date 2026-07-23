@@ -1,5 +1,7 @@
 package com.example.rootin.member.service;
 
+import com.example.rootin.global.exception.CustomException;
+import com.example.rootin.global.exception.ErrorCode;
 import com.example.rootin.member.dto.request.ProfileRequestDto;
 import com.example.rootin.member.dto.response.MemberResponseDto;
 import com.example.rootin.member.dto.response.NicknameCheckResponseDto;
@@ -42,7 +44,7 @@ public class MemberService {
         String nickname = request.getNickname().trim();
 
         if (memberRepository.existsByNickname(nickname) && !nickname.equals(member.getNickname())) {
-            throw new IllegalArgumentException("이미 사용 중인 닉네임입니다.");
+            throw new CustomException(ErrorCode.CONFLICT);
         }
 
         boolean invalidInterest =
@@ -51,7 +53,7 @@ public class MemberService {
                         .anyMatch(interest -> !ALLOWED_INTERESTS.contains(interest));
 
         if (invalidInterest) {
-            throw new IllegalArgumentException("올바르지 않은 관심 분야가 포함되어 있습니다.");
+            throw new CustomException(ErrorCode.BAD_REQUEST);
         }
 
         member.completeProfile(
@@ -66,8 +68,7 @@ public class MemberService {
     private Member getMember(Long memberId) {
         return memberRepository
                 .findById(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("회원 정보를 찾을 수 없습니다.")
-                );
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
     }
 
     //닉네임 중복 확인
@@ -82,8 +83,8 @@ public class MemberService {
     }
     //닉네임 미입력 경우 처리, 공백 제거
     private String normalizeNickname(String nickname) {
-        if(nickname == null || nickname.isBlank()){
-            throw new IllegalArgumentException("닉네임을 입력해주세요.");
+        if (nickname == null || nickname.isBlank()) {
+            throw new CustomException(ErrorCode.BAD_REQUEST);
         }
         return nickname.trim();
     }

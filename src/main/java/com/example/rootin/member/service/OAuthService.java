@@ -1,5 +1,7 @@
 package com.example.rootin.member.service;
 
+import com.example.rootin.global.exception.CustomException;
+import com.example.rootin.global.exception.ErrorCode;
 import com.example.rootin.global.jwt.JwtTokenProvider;
 import com.example.rootin.member.domain.OAuthProvider;
 import com.example.rootin.member.dto.response.MemberResponseDto;
@@ -75,19 +77,17 @@ public class OAuthService {
     @Transactional
     public TokenIssueResult reissue(String refreshToken) {
         if (refreshToken == null || refreshToken.isBlank()) {
-            throw new IllegalArgumentException("refreshToken cookie is missing.");
+            throw new CustomException(ErrorCode.UNAUTHORIZED);
         }
 
         if (!jwtTokenProvider.validateToken(refreshToken)) {
-            throw new IllegalArgumentException("Invalid or expired refresh token.");
+            throw new CustomException(ErrorCode.UNAUTHORIZED);
         }
 
         Long memberId = jwtTokenProvider.getMemberId(refreshToken);
         Member member =
                 memberRepository.findById(memberId)
-                        .orElseThrow(() ->
-                                new IllegalArgumentException("Member not found.")
-                        );
+                        .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 
         String newAccessToken = jwtTokenProvider.createAccessToken(member);
         String newRefreshToken = jwtTokenProvider.createRefreshToken(member);
@@ -150,7 +150,7 @@ public class OAuthService {
                         .block();
 
         if (response == null || response.accessToken() == null) {
-            throw new IllegalArgumentException("Failed to issue Kakao access token.");
+            throw new CustomException(ErrorCode.OAUTH_PROVIDER_ERROR);
         }
 
         return response.accessToken();
@@ -158,7 +158,7 @@ public class OAuthService {
 
     private String normalizeCode(String code) {
         if (code == null || code.isBlank()) {
-            return code;
+            throw new CustomException(ErrorCode.BAD_REQUEST);
         }
 
         if (!code.contains("%")) {
@@ -178,7 +178,7 @@ public class OAuthService {
                         .block();
 
         if (response == null) {
-            throw new IllegalArgumentException("Failed to fetch Kakao user info.");
+            throw new CustomException(ErrorCode.OAUTH_PROVIDER_ERROR);
         }
 
         return response;
@@ -206,7 +206,7 @@ public class OAuthService {
                         .block();
 
         if (response == null || response.accessToken() == null) {
-            throw new IllegalArgumentException("Failed to issue Google access token.");
+            throw new CustomException(ErrorCode.OAUTH_PROVIDER_ERROR);
         }
 
         return response.accessToken();
@@ -222,7 +222,7 @@ public class OAuthService {
                         .block();
 
         if (response == null) {
-            throw new IllegalArgumentException("Failed to fetch Google user info.");
+            throw new CustomException(ErrorCode.OAUTH_PROVIDER_ERROR);
         }
 
         return response;

@@ -1,5 +1,6 @@
 package com.example.rootin.member.controller;
 
+import com.example.rootin.global.common.ApiResponse;
 import com.example.rootin.member.dto.response.TokenResponseDto;
 import com.example.rootin.member.service.OAuthService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -23,28 +24,28 @@ public class OAuthController {
 
     @GetMapping("/kakao")
     @Operation(summary = "카카오 로그인")
-    public ResponseEntity<TokenResponseDto> kakaoLogin(@RequestParam String code) {
+    public ResponseEntity<ApiResponse<TokenResponseDto>> kakaoLogin(@RequestParam String code) {
         OAuthService.TokenIssueResult result = oauthService.kakaoLogin(code);
         return buildTokenResponse(result);
     }
 
     @GetMapping("/google")
     @Operation(summary = "구글 로그인")
-    public ResponseEntity<TokenResponseDto> googleLogin(@RequestParam String code) {
+    public ResponseEntity<ApiResponse<TokenResponseDto>> googleLogin(@RequestParam String code) {
         OAuthService.TokenIssueResult result = oauthService.googleLogin(code);
         return buildTokenResponse(result);
     }
 
     @PostMapping("/reissue")
     @Operation(summary = "JWT 재발급")
-    public ResponseEntity<TokenResponseDto> reissue(
+    public ResponseEntity<ApiResponse<TokenResponseDto>> reissue(
             @CookieValue(value = "refreshToken", required = false) String refreshToken
     ) {
         OAuthService.TokenIssueResult result = oauthService.reissue(refreshToken);
         return buildTokenResponse(result);
     }
 
-    private ResponseEntity<TokenResponseDto> buildTokenResponse(
+    private ResponseEntity<ApiResponse<TokenResponseDto>> buildTokenResponse(
             OAuthService.TokenIssueResult result
     ) {
         ResponseCookie refreshTokenCookie =
@@ -52,12 +53,12 @@ public class OAuthController {
                         .httpOnly(true)
                         .secure(false)
                         .path("/")
-                        .sameSite("Lax") // 대부분의 일반적인 요청에서는 쿠키전송, 외부 사이트에서 발생한 일부 요청에는 쿠키 전송을 제한
+                        .sameSite("Lax")
                         .maxAge(oauthService.getRefreshTokenMaxAgeSeconds())
                         .build();
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
-                .body(result.response());
+                .body(ApiResponse.success(result.response()));
     }
 }
