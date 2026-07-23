@@ -32,5 +32,9 @@ jobs:
             docker pull syeonx41/rootin-be:latest
             docker stop rootin-be || true
             docker rm rootin-be || true
-            docker run -d --name rootin-be -p 8080:8080 \
+            docker run -d --name rootin-be \
+              --network rootin-net \
+              --env-file /home/ubuntu/.env \
+              -p 8080:8080 \
+              --restart unless-stopped \
               syeonx41/rootin-be:latest
