@@ -1,4 +1,6 @@
 package com.example.rootin.member.domain;
 
-public class MemberRole {
+public enum MemberRole {
+    ROLE_MEMBER,
+    ROLE_ADMIN
 }

@@ -1,13 +1,16 @@
 package com.example.rootin.member.entity;
 
+import com.example.rootin.member.domain.InterestField;
 import jakarta.persistence.*;
+import com.example.rootin.member.domain.MemberRole;
 import com.example.rootin.member.domain.OAuthProvider;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Entity
@@ -37,8 +40,14 @@ public class Member {
     @Column(name = "age_group", length = 20)
     private String ageGroup;
 
-    @Column(name = "interest_field", length = 300)
-    private String interestField;
+    @ElementCollection
+    @CollectionTable(
+            name = "member_interest_field",
+            joinColumns = @JoinColumn(name = "member_id")
+    )
+    @Enumerated(EnumType.STRING)
+    @Column(name = "interest_field")
+    private List<InterestField> interestFields = new ArrayList<>();
 
     @Column(nullable = false)
     private Long point = 0L;
@@ -49,8 +58,9 @@ public class Member {
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    private String role = "ROLE_MEMBER";
+    private MemberRole role;
 
 
     private Member(
@@ -64,6 +74,7 @@ public class Member {
         this.email = email;
         this.imgUrl = imgUrl;
         this.createdAt = LocalDateTime.now();
+        this.role = MemberRole.ROLE_MEMBER;
     }
 
     public static Member createKakaoMember(
@@ -107,11 +118,16 @@ public class Member {
     public void completeProfile(
             String nickname,
             String ageGroup,
-            List<String> interestFields
+            List<InterestField> interestFields
     ) {
         this.nickname = nickname;
         this.ageGroup = ageGroup;
-        this.interestField = String.join(",", interestFields);
+
+        this.interestFields.clear();
+
+        if (interestFields != null) {
+            this.interestFields.addAll(interestFields);
+        }
     }
 
 }

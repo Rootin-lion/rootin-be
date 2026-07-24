@@ -52,7 +52,7 @@ public class JwtTokenProvider {
 
         return Jwts.builder()
                 .subject(String.valueOf(member.getId()))
-                .claim("role", member.getRole())
+                .claim("role", member.getRole().name())
                 .issuedAt(now)
                 .expiration(expiredAt)
                 .signWith(secretKey)

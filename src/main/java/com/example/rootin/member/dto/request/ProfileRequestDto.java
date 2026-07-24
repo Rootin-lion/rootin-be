@@ -1,5 +1,6 @@
 package com.example.rootin.member.dto.request;
 
+import com.example.rootin.member.domain.InterestField;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Pattern;
@@ -24,5 +25,5 @@ public class ProfileRequestDto {
 
     @NotEmpty(message = "관심분야를 한 개 이상 선택해주세요.")
     @Size(max = 6, message = "관심분야는 최대 6개까지 선택가능합니다.")
-    private List<String> interestFields;
+    private List<InterestField> interestFields;
 }
