@@ -1,5 +1,7 @@
 package com.example.rootin.global.jwt;
 
+import com.example.rootin.global.exception.CustomException;
+import com.example.rootin.global.exception.ErrorCode;
 import com.example.rootin.member.entity.Member;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -24,15 +26,10 @@ public class JwtTokenProvider {
             @Value("${jwt.refresh-expiration}") long refreshExpiration
     ) {
         if (secret.getBytes(StandardCharsets.UTF_8).length < 32) {
-            throw new IllegalArgumentException(
-                    "JWT Secret은 32바이트 이상이어야 합니다."
-            );
+            throw new CustomException(ErrorCode.INVALID_JWT_SECRET);
         }
 
-        this.secretKey = Keys.hmacShaKeyFor(
-                secret.getBytes(StandardCharsets.UTF_8)
-        );
-
+        this.secretKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
         this.accessExpiration = accessExpiration;
         this.refreshExpiration = refreshExpiration;
     }
@@ -51,13 +48,11 @@ public class JwtTokenProvider {
 
     private String createToken(Member member, long expiration) {
         Date now = new Date();
-        Date expiredAt = new Date(
-                now.getTime() + expiration
-        );
+        Date expiredAt = new Date(now.getTime() + expiration);
 
         return Jwts.builder()
                 .subject(String.valueOf(member.getId()))
-                .claim("role", member.getRole())
+                .claim("role", member.getRole().name())
                 .issuedAt(now)
                 .expiration(expiredAt)
                 .signWith(secretKey)

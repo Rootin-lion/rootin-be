@@ -1,11 +1,12 @@
 package com.example.rootin.member.dto.response;
 
+import com.example.rootin.member.domain.InterestField;
+import com.example.rootin.member.domain.MemberRole;
 import com.example.rootin.member.entity.Member;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.util.Arrays;
 import java.util.List;
 
 @Getter
@@ -19,21 +20,12 @@ public class MemberResponseDto {
     private String imgUrl;
     private String nickname;
     private String ageGroup;
-    private List<String> interestFields;
+    private List<InterestField> interestFields;
     private Long point;
     private Integer streakDays;
-    private String role;
-    private boolean profileCompleted;
+    private MemberRole role;
 
     public static MemberResponseDto from(Member member) {
-        List<String> interests =
-                member.getInterestField() == null
-                        || member.getInterestField().isBlank()
-                        ? List.of()
-                        : Arrays.asList(
-                        member.getInterestField().split(",")
-                );
-
         return new MemberResponseDto(
                 member.getId(),
                 member.getProvider(),
@@ -41,11 +33,10 @@ public class MemberResponseDto {
                 member.getImgUrl(),
                 member.getNickname(),
                 member.getAgeGroup(),
-                interests,
+                List.copyOf(member.getInterestFields()),
                 member.getPoint(),
                 member.getStreakDays(),
-                member.getRole(),
-                member.isProfileCompleted()
+                member.getRole()
         );
     }
 }
