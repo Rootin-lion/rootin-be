@@ -73,7 +73,7 @@ public class JwtAuthenticationFilter
                         null,
                         List.of(
                                 new SimpleGrantedAuthority(
-                                        member.getRole()
+                                        member.getRole().name()
                                 )
                         )
                 );
