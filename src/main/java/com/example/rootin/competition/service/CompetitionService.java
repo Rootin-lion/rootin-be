@@ -23,7 +23,7 @@ public class CompetitionService {
     public CompetitionTodayResponse getTodayCompetition() {
         LocalDate today = LocalDate.now();
         Competition competition = competitionRepository.findByCompetitionDate(today)
-                .orElseThrow(() -> new CompetitionNotFoundException(today));
+                .orElseThrow(CompetitionNotFoundException::new);
 
         LocalDateTime now = LocalDateTime.now();
         CompetitionStatus status = competition.getStatus(now);
