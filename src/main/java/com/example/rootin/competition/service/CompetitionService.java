@@ -3,6 +3,7 @@ package com.example.rootin.competition.service;
 import com.example.rootin.competition.domain.Competition;
 import com.example.rootin.competition.domain.CompetitionParticipant;
 import com.example.rootin.competition.domain.CompetitionStatus;
+import com.example.rootin.competition.dto.response.CompetitionClosedResponse;
 import com.example.rootin.competition.dto.response.CompetitionJoinResponse;
 import com.example.rootin.competition.dto.response.CompetitionTodayResponse;
 import com.example.rootin.competition.exception.CompetitionAlreadyJoinedException;
@@ -11,6 +12,8 @@ import com.example.rootin.competition.exception.CompetitionNotJoinableException;
 import com.example.rootin.competition.repository.CompetitionParticipantRepository;
 import com.example.rootin.competition.repository.CompetitionRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +26,7 @@ import java.time.LocalDateTime;
 public class CompetitionService {
 
     private static final long PROBLEM_TIME_LIMIT_MINUTES = 30; // 문제 풀이 시간 30분 제한
+    private static final int PROBLEM_COUNT = 10; // 대회 문제 10개
 
     private final CompetitionRepository competitionRepository;
     private final CompetitionParticipantRepository competitionParticipantRepository;
@@ -89,5 +93,25 @@ public class CompetitionService {
     private LocalDateTime calculateExpiresAt(LocalDateTime startedAt, Competition competition) {
         LocalDateTime expiresAt = startedAt.plusMinutes(PROBLEM_TIME_LIMIT_MINUTES);
         return expiresAt.isAfter(competition.getEndAt()) ? competition.getEndAt() : expiresAt;
+    }
+
+    @Transactional(readOnly = true)
+    public Page<CompetitionClosedResponse> getClosedCompetitions(Long memberId, Pageable pageable) {
+        LocalDateTime now = LocalDateTime.now();
+        Page<Competition> competitions = competitionRepository.findByEndAtBeforeOrderByCompetitionDateDesc(now, pageable);
+
+        return competitions.map(competition -> {
+            long participantCount = competitionParticipantRepository.countByCompetition(competition);
+            boolean viewable = competitionParticipantRepository.existsByMemberIdAndCompetition(memberId, competition);
+
+            return new CompetitionClosedResponse(
+                    competition.getId(),
+                    competition.getCompetitionDate(),
+                    PROBLEM_COUNT,
+                    (int) PROBLEM_TIME_LIMIT_MINUTES,
+                    participantCount,
+                    viewable
+            );
+        });
     }
 }
