@@ -1,11 +1,18 @@
 package com.example.rootin.competition.controller;
 
+import com.example.rootin.competition.dto.response.CompetitionClosedResponse;
 import com.example.rootin.competition.dto.response.CompetitionJoinResponse;
 import com.example.rootin.competition.dto.response.CompetitionTodayResponse;
 import com.example.rootin.competition.service.CompetitionService;
 import com.example.rootin.global.common.ApiResponse;
+import com.example.rootin.global.common.PageResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,5 +36,17 @@ public class CompetitionController {
             @AuthenticationPrincipal Long memberId
     ) {
         return ApiResponse.success(competitionService.join(competitionId, memberId));
+    }
+
+    @Operation(summary = "종료된 대회 목록 조회")
+    @GetMapping
+    public ApiResponse<PageResponse<CompetitionClosedResponse>> getClosedCompetitions(
+            @RequestParam(defaultValue = "CLOSED") String status,
+            @RequestParam(defaultValue = "0") int page,
+            @AuthenticationPrincipal Long memberId
+    ) {
+        Pageable pageable = PageRequest.of(page, 4, Sort.by(Sort.Direction.DESC, "competitionDate"));
+        Page<CompetitionClosedResponse> result = competitionService.getClosedCompetitions(memberId, pageable);
+        return ApiResponse.success(PageResponse.of(result));
     }
 }
