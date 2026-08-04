@@ -14,7 +14,11 @@ public enum ErrorCode {
     CONFLICT(409, "C409", "요청이 현재 상태와 충돌합니다."),
     OAUTH_PROVIDER_ERROR(502, "C502", "외부 인증 서비스 처리에 실패했습니다."),
     INVALID_JWT_SECRET(500, "C503", "JWT Secret 설정이 올바르지 않습니다."),
-    INTERNAL_SERVER_ERROR(500, "C500", "서버 오류가 발생했습니다.");
+    INTERNAL_SERVER_ERROR(500, "C500", "서버 오류가 발생했습니다."),
+
+    COMPETITION_NOT_FOUND(404, "C404-1", "해당 날짜에 진행되는 대회가 없습니다."),
+    COMPETITION_NOT_JOINABLE(400, "C400-1", "지금은 참여할 수 없는 대회입니다."),
+    COMPETITION_ALREADY_JOINED(409, "C409-1", "이미 참여한 대회입니다.");
 
     private final int status;
     private final String code;
