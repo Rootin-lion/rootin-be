@@ -1,8 +1,6 @@
 package com.example.rootin.competition.controller;
 
-import com.example.rootin.competition.dto.response.CompetitionClosedResponse;
-import com.example.rootin.competition.dto.response.CompetitionJoinResponse;
-import com.example.rootin.competition.dto.response.CompetitionTodayResponse;
+import com.example.rootin.competition.dto.response.*;
 import com.example.rootin.competition.service.CompetitionService;
 import com.example.rootin.global.common.ApiResponse;
 import com.example.rootin.global.common.PageResponse;
@@ -15,6 +13,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/competitions")
@@ -48,5 +48,20 @@ public class CompetitionController {
         Pageable pageable = PageRequest.of(page, 4, Sort.by(Sort.Direction.DESC, "competitionDate"));
         Page<CompetitionClosedResponse> result = competitionService.getClosedCompetitions(memberId, pageable);
         return ApiResponse.success(PageResponse.of(result));
+    }
+
+    @Operation(summary = "대회 문제 목록 조회")
+    @GetMapping("/{competitionId}/problems")
+    public ApiResponse<CompetitionProblemListResponse> getProblems(@PathVariable Long competitionId) {
+        return ApiResponse.success(competitionService.getProblems(competitionId));
+    }
+
+    @Operation(summary = "문제 상세 조회")
+    @GetMapping("/{competitionId}/problems/{problemId}")
+    public ApiResponse<CompetitionProblemDetailResponse> getProblemDetail(
+            @PathVariable Long competitionId,
+            @PathVariable Long problemId
+    ) {
+        return ApiResponse.success(competitionService.getProblemDetail(competitionId, problemId));
     }
 }
