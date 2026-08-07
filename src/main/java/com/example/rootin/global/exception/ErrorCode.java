@@ -18,7 +18,9 @@ public enum ErrorCode {
 
     COMPETITION_NOT_FOUND(404, "C404-1", "해당 날짜에 진행되는 대회가 없습니다."),
     COMPETITION_NOT_JOINABLE(400, "C400-1", "지금은 참여할 수 없는 대회입니다."),
-    COMPETITION_ALREADY_JOINED(409, "C409-1", "이미 참여한 대회입니다.");
+    COMPETITION_ALREADY_JOINED(409, "C409-1", "이미 참여한 대회입니다."),
+    COMPETITION_PROBLEM_NOT_FOUND(404, "C404-2", "존재하지 않는 문제입니다.");
+
 
     private final int status;
     private final String code;

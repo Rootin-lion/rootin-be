@@ -2,14 +2,16 @@ package com.example.rootin.competition.service;
 
 import com.example.rootin.competition.domain.Competition;
 import com.example.rootin.competition.domain.CompetitionParticipant;
+import com.example.rootin.competition.domain.CompetitionProblem;
 import com.example.rootin.competition.domain.CompetitionStatus;
-import com.example.rootin.competition.dto.response.CompetitionClosedResponse;
-import com.example.rootin.competition.dto.response.CompetitionJoinResponse;
-import com.example.rootin.competition.dto.response.CompetitionTodayResponse;
+import com.example.rootin.competition.dto.response.*;
 import com.example.rootin.competition.exception.CompetitionAlreadyJoinedException;
 import com.example.rootin.competition.exception.CompetitionNotFoundException;
 import com.example.rootin.competition.exception.CompetitionNotJoinableException;
+import com.example.rootin.competition.exception.CompetitionProblemNotFoundException;
 import com.example.rootin.competition.repository.CompetitionParticipantRepository;
+import com.example.rootin.competition.repository.CompetitionProblemOptionRepository;
+import com.example.rootin.competition.repository.CompetitionProblemRepository;
 import com.example.rootin.competition.repository.CompetitionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -20,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -30,6 +33,8 @@ public class CompetitionService {
 
     private final CompetitionRepository competitionRepository;
     private final CompetitionParticipantRepository competitionParticipantRepository;
+    private final CompetitionProblemRepository competitionProblemRepository;
+    private final CompetitionProblemOptionRepository competitionProblemOptionRepository;
 
     @Transactional(readOnly = true)
     public CompetitionTodayResponse getTodayCompetition() {
@@ -113,5 +118,51 @@ public class CompetitionService {
                     viewable
             );
         });
+    }
+
+    @Transactional(readOnly = true)
+    public CompetitionProblemListResponse getProblems(Long competitionId) {
+        Competition competition = competitionRepository.findById(competitionId)
+                .orElseThrow(CompetitionNotFoundException::new);
+
+        List<CompetitionProblem> problems = competitionProblemRepository.findByCompetitionOrderByProblemOrderAsc(competition);
+
+        List<CompetitionProblemSummaryResponse> summaries = problems.stream()
+                .map(problem -> new CompetitionProblemSummaryResponse(problem.getId(), problem.getProblemOrder()))
+                .toList();
+
+        // 처음 진입 시 1번 문제(순서상 첫 번째)를 바로 보여줄 수 있도록 상세까지 같이 반환
+        CompetitionProblemDetailResponse firstProblem = problems.isEmpty()
+                ? null
+                : buildProblemDetailResponse(problems.get(0));
+
+        return new CompetitionProblemListResponse(summaries, firstProblem);
+    }
+
+    @Transactional(readOnly = true)
+    public CompetitionProblemDetailResponse getProblemDetail(Long competitionId, Long problemId) {
+        Competition competition = competitionRepository.findById(competitionId)
+                .orElseThrow(CompetitionNotFoundException::new);
+
+        CompetitionProblem problem = competitionProblemRepository.findByIdAndCompetition(problemId, competition)
+                .orElseThrow(CompetitionProblemNotFoundException::new);
+
+        return buildProblemDetailResponse(problem);
+    }
+
+    private CompetitionProblemDetailResponse buildProblemDetailResponse(CompetitionProblem problem) {
+        List<CompetitionProblemDetailResponse.OptionResponse> options =
+                competitionProblemOptionRepository.findByCompetitionProblemOrderByOptionOrderAsc(problem).stream()
+                        .map(option -> new CompetitionProblemDetailResponse.OptionResponse(
+                                option.getId(), option.getOptionContent(), option.getOptionOrder()))
+                        .toList();
+
+        return new CompetitionProblemDetailResponse(
+                problem.getId(),
+                problem.getProblemOrder(),
+                problem.getProblemContent(),
+                problem.getCategory(),
+                options
+        );
     }
 }
