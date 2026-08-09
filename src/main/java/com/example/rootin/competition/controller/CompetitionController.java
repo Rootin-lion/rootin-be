@@ -64,4 +64,13 @@ public class CompetitionController {
     ) {
         return ApiResponse.success(competitionService.getProblemDetail(competitionId, problemId));
     }
+
+    @Operation(summary = "대회 진행 정보 조회")
+    @GetMapping("/{competitionId}/me")
+    public ApiResponse<CompetitionMeResponse> getMe(
+            @PathVariable Long competitionId,
+            @AuthenticationPrincipal Long memberId
+    ) {
+        return ApiResponse.success(competitionService.getMe(competitionId, memberId));
+    }
 }

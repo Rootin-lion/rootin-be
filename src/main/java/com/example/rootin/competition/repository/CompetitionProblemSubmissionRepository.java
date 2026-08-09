@@ -5,6 +5,7 @@ import com.example.rootin.competition.domain.CompetitionProblem;
 import com.example.rootin.competition.domain.CompetitionProblemSubmission;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface CompetitionProblemSubmissionRepository extends JpaRepository<CompetitionProblemSubmission, Long> {
@@ -14,5 +15,8 @@ public interface CompetitionProblemSubmissionRepository extends JpaRepository<Co
             CompetitionParticipant competitionParticipant,
             CompetitionProblem competitionProblem
     );
+
+    // 진행 정보 조회 - 참여자가 지금까지 답한 문제 전체 조회
+    List<CompetitionProblemSubmission> findByCompetitionParticipant(CompetitionParticipant competitionParticipant);
 }
 

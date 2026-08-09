@@ -9,10 +9,8 @@ import com.example.rootin.competition.exception.CompetitionAlreadyJoinedExceptio
 import com.example.rootin.competition.exception.CompetitionNotFoundException;
 import com.example.rootin.competition.exception.CompetitionNotJoinableException;
 import com.example.rootin.competition.exception.CompetitionProblemNotFoundException;
-import com.example.rootin.competition.repository.CompetitionParticipantRepository;
-import com.example.rootin.competition.repository.CompetitionProblemOptionRepository;
-import com.example.rootin.competition.repository.CompetitionProblemRepository;
-import com.example.rootin.competition.repository.CompetitionRepository;
+import com.example.rootin.competition.exception.CompetitionParticipantNotFoundException;
+import com.example.rootin.competition.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -35,6 +33,7 @@ public class CompetitionService {
     private final CompetitionParticipantRepository competitionParticipantRepository;
     private final CompetitionProblemRepository competitionProblemRepository;
     private final CompetitionProblemOptionRepository competitionProblemOptionRepository;
+    private final CompetitionProblemSubmissionRepository competitionProblemSubmissionRepository;
 
     @Transactional(readOnly = true)
     public CompetitionTodayResponse getTodayCompetition() {
@@ -163,6 +162,34 @@ public class CompetitionService {
                 problem.getProblemContent(),
                 problem.getCategory(),
                 options
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public CompetitionMeResponse getMe(Long competitionId, Long memberId) {
+        Competition competition = competitionRepository.findById(competitionId)
+                .orElseThrow(CompetitionNotFoundException::new);
+
+        CompetitionParticipant participant = competitionParticipantRepository
+                .findByMemberIdAndCompetition(memberId, competition)
+                .orElseThrow(CompetitionParticipantNotFoundException::new);
+
+        LocalDateTime expiresAt = calculateExpiresAt(participant.getStartedAt(), competition);
+
+        List<CompetitionMeResponse.AnsweredProblemResponse> answeredProblems =
+                competitionProblemSubmissionRepository.findByCompetitionParticipant(participant).stream()
+                        .map(submission -> new CompetitionMeResponse.AnsweredProblemResponse(
+                                submission.getCompetitionProblem().getId(),
+                                submission.getSelectedOption().getId()
+                        ))
+                        .toList();
+
+        return new CompetitionMeResponse(
+                participant.getId(),
+                participant.getStartedAt(),
+                expiresAt,
+                participant.getSubmittedAt() != null,
+                answeredProblems
         );
     }
 }
