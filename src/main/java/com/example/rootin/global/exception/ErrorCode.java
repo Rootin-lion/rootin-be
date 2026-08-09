@@ -17,9 +17,14 @@ public enum ErrorCode {
     INTERNAL_SERVER_ERROR(500, "C500", "서버 오류가 발생했습니다."),
 
     COMPETITION_NOT_FOUND(404, "C404-1", "해당 날짜에 진행되는 대회가 없습니다."),
+    COMPETITION_PROBLEM_NOT_FOUND(404, "C404-2", "존재하지 않는 문제입니다."),
+    COMPETITION_PARTICIPANT_NOT_FOUND(404, "C404-3", "참여 정보를 찾을 수 없습니다."),
+    COMPETITION_OPTION_NOT_FOUND(404, "C404-4", "선택한 보기를 찾을 수 없습니다."),
     COMPETITION_NOT_JOINABLE(400, "C400-1", "지금은 참여할 수 없는 대회입니다."),
+    COMPETITION_TIME_EXPIRED(400, "C400-2", "문제 풀이 시간이 만료되었습니다."),
     COMPETITION_ALREADY_JOINED(409, "C409-1", "이미 참여한 대회입니다."),
-    COMPETITION_PROBLEM_NOT_FOUND(404, "C404-2", "존재하지 않는 문제입니다.");
+    COMPETITION_ALREADY_SUBMITTED(409, "C409-2", "이미 제출한 대회입니다.");
+
 
 
     private final int status;

@@ -1,10 +1,12 @@
 package com.example.rootin.competition.controller;
 
+import com.example.rootin.competition.dto.request.CompetitionAnswerRequest;
 import com.example.rootin.competition.dto.response.*;
 import com.example.rootin.competition.service.CompetitionService;
 import com.example.rootin.global.common.ApiResponse;
 import com.example.rootin.global.common.PageResponse;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -63,5 +65,25 @@ public class CompetitionController {
             @PathVariable Long problemId
     ) {
         return ApiResponse.success(competitionService.getProblemDetail(competitionId, problemId));
+    }
+
+    @Operation(summary = "대회 진행 정보 조회")
+    @GetMapping("/{competitionId}/me")
+    public ApiResponse<CompetitionMeResponse> getMe(
+            @PathVariable Long competitionId,
+            @AuthenticationPrincipal Long memberId
+    ) {
+        return ApiResponse.success(competitionService.getMe(competitionId, memberId));
+    }
+
+    @Operation(summary = "문제별 답안 저장")
+    @PatchMapping("/{competitionId}/answers")
+    public ApiResponse<Void> saveAnswer(
+            @PathVariable Long competitionId,
+            @RequestBody @Valid CompetitionAnswerRequest request,
+            @AuthenticationPrincipal Long memberId
+    ) {
+        competitionService.saveAnswer(competitionId, memberId, request);
+        return ApiResponse.success(null);
     }
 }
