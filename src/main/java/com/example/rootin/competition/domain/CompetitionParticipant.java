@@ -37,4 +37,7 @@ public class CompetitionParticipant {
         this.startedAt = startedAt;
     }
 
+    public void submit(LocalDateTime submittedAt) {
+        this.submittedAt = submittedAt;
+    }
 }

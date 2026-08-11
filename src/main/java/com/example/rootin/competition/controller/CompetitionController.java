@@ -86,4 +86,13 @@ public class CompetitionController {
         competitionService.saveAnswer(competitionId, memberId, request);
         return ApiResponse.success(null);
     }
+
+    @Operation(summary = "대회 최종 제출")
+    @PostMapping("/{competitionId}/submit")
+    public ApiResponse<CompetitionSubmitResponse> submit(
+            @PathVariable Long competitionId,
+            @AuthenticationPrincipal Long memberId
+    ) {
+        return ApiResponse.success(competitionService.submit(competitionId, memberId));
+    }
 }

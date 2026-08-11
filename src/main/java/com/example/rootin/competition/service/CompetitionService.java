@@ -219,4 +219,21 @@ public class CompetitionService {
                                 new CompetitionProblemSubmission(option, participant, problem, option.isAnswer()))
                 );
     }
+
+    @Transactional
+    public CompetitionSubmitResponse submit(Long competitionId, Long memberId) {
+        Competition competition = competitionRepository.findById(competitionId)
+                .orElseThrow(CompetitionNotFoundException::new);
+
+        CompetitionParticipant participant = competitionParticipantRepository
+                .findByMemberIdAndCompetition(memberId, competition)
+                .orElseThrow(CompetitionParticipantNotFoundException::new);
+
+        if (participant.getSubmittedAt() != null) {
+            throw new CompetitionAlreadySubmittedException();
+        }
+        participant.submit(LocalDateTime.now());
+
+        return new CompetitionSubmitResponse(participant.getId(), participant.getSubmittedAt());
+    }
 }
