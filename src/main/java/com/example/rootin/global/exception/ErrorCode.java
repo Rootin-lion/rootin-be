@@ -22,6 +22,7 @@ public enum ErrorCode {
     COMPETITION_OPTION_NOT_FOUND(404, "C404-4", "선택한 보기를 찾을 수 없습니다."),
     COMPETITION_NOT_JOINABLE(400, "C400-1", "지금은 참여할 수 없는 대회입니다."),
     COMPETITION_TIME_EXPIRED(400, "C400-2", "문제 풀이 시간이 만료되었습니다."),
+    COMPETITION_NOT_SUBMITTED(400, "C400-3", "아직 제출하지 않은 대회입니다."),
     COMPETITION_ALREADY_JOINED(409, "C409-1", "이미 참여한 대회입니다."),
     COMPETITION_ALREADY_SUBMITTED(409, "C409-2", "이미 제출한 대회입니다.");
 

@@ -2,6 +2,7 @@ package com.example.rootin.competition.controller;
 
 import com.example.rootin.competition.dto.request.CompetitionAnswerRequest;
 import com.example.rootin.competition.dto.response.*;
+import com.example.rootin.competition.service.CompetitionResultService;
 import com.example.rootin.competition.service.CompetitionService;
 import com.example.rootin.global.common.ApiResponse;
 import com.example.rootin.global.common.PageResponse;
@@ -12,11 +13,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/competitions")
@@ -24,6 +22,7 @@ import java.util.List;
 public class CompetitionController {
 
     private final CompetitionService competitionService;
+    private final CompetitionResultService competitionResultService;
 
     @Operation(summary = "현재 진행중인 대회 조회")
     @GetMapping("/today")
@@ -94,5 +93,14 @@ public class CompetitionController {
             @AuthenticationPrincipal Long memberId
     ) {
         return ApiResponse.success(competitionService.submit(competitionId, memberId));
+    }
+
+    @Operation(summary = "대회 결과 요약 조회")
+    @GetMapping("/{competitionId}/result")
+    public ApiResponse<CompetitionResultResponse> getResult(
+            @PathVariable Long competitionId,
+            @AuthenticationPrincipal Long memberId
+    ) {
+        return ApiResponse.success(competitionResultService.getResult(competitionId, memberId));
     }
 }
