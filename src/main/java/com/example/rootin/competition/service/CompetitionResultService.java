@@ -1,14 +1,13 @@
 package com.example.rootin.competition.service;
 
 import com.example.rootin.competition.domain.*;
+import com.example.rootin.competition.dto.response.CompetitionProblemSolutionResponse;
 import com.example.rootin.competition.dto.response.CompetitionResultResponse;
 import com.example.rootin.competition.exception.CompetitionNotFoundException;
 import com.example.rootin.competition.exception.CompetitionNotSubmittedException;
 import com.example.rootin.competition.exception.CompetitionParticipantNotFoundException;
-import com.example.rootin.competition.repository.CompetitionParticipantRepository;
-import com.example.rootin.competition.repository.CompetitionProblemRepository;
-import com.example.rootin.competition.repository.CompetitionProblemSubmissionRepository;
-import com.example.rootin.competition.repository.CompetitionRepository;
+import com.example.rootin.competition.exception.CompetitionProblemNotFoundException;
+import com.example.rootin.competition.repository.*;
 import com.example.rootin.member.domain.InterestField;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,6 +17,7 @@ import java.time.Duration;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -31,6 +31,7 @@ public class CompetitionResultService {
     private final CompetitionParticipantRepository competitionParticipantRepository;
     private final CompetitionProblemRepository competitionProblemRepository;
     private final CompetitionProblemSubmissionRepository competitionProblemSubmissionRepository;
+    private final CompetitionProblemOptionRepository competitionProblemOptionRepository;
 
     @Transactional(readOnly = true)
     public CompetitionResultResponse getResult(Long competitionId, Long memberId) {
@@ -112,4 +113,46 @@ public class CompetitionResultService {
                 .map(Map.Entry::getKey)
                 .toList();
     }
+
+    @Transactional(readOnly = true)
+    public CompetitionProblemSolutionResponse getSolution(Long competitionId, Long problemId, Long memberId) {
+        Competition competition = competitionRepository.findById(competitionId)
+                .orElseThrow(CompetitionNotFoundException::new);
+
+        CompetitionParticipant participant = competitionParticipantRepository
+                .findByMemberIdAndCompetition(memberId, competition)
+                .orElseThrow(CompetitionParticipantNotFoundException::new);
+
+        if (participant.getSubmittedAt() == null) {
+            throw new CompetitionNotSubmittedException();
+        }
+
+        CompetitionProblem problem = competitionProblemRepository.findByIdAndCompetition(problemId, competition)
+                .orElseThrow(CompetitionProblemNotFoundException::new);
+
+        List<CompetitionProblemSolutionResponse.OptionResponse> options =
+                competitionProblemOptionRepository.findByCompetitionProblemOrderByOptionOrderAsc(problem).stream()
+                        .map(option -> new CompetitionProblemSolutionResponse.OptionResponse(
+                                option.getId(), option.getOptionContent(), option.getOptionOrder(), option.isAnswer()))
+                        .toList();
+
+        // 안 풀고 넘어간 문제일 수 있음 -> 제출 기록은 Optional로 처리
+        Optional<CompetitionProblemSubmission> submission =
+                competitionProblemSubmissionRepository.findByCompetitionParticipantAndCompetitionProblem(participant, problem);
+
+        Long selectedOptionId = submission.map(s -> s.getSelectedOption().getId()).orElse(null);
+        boolean correct = submission.map(CompetitionProblemSubmission::isCorrect).orElse(false);
+
+        return new CompetitionProblemSolutionResponse(
+                problem.getId(),
+                problem.getProblemOrder(),
+                problem.getProblemContent(),
+                problem.getCategory(),
+                problem.getProblemExplanation(),
+                options,
+                selectedOptionId,
+                correct
+        );
+    }
+
 }

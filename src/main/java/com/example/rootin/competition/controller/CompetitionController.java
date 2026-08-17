@@ -103,4 +103,14 @@ public class CompetitionController {
     ) {
         return ApiResponse.success(competitionResultService.getResult(competitionId, memberId));
     }
+
+    @Operation(summary = "문제별 결과 상세 조회")
+    @GetMapping("/{competitionId}/problems/{problemId}/solution")
+    public ApiResponse<CompetitionProblemSolutionResponse> getSolution(
+            @PathVariable Long competitionId,
+            @PathVariable Long problemId,
+            @AuthenticationPrincipal Long memberId
+    ) {
+        return ApiResponse.success(competitionResultService.getSolution(competitionId, problemId, memberId));
+    }
 }
