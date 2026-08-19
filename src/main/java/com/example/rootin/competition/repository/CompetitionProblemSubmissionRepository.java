@@ -18,5 +18,8 @@ public interface CompetitionProblemSubmissionRepository extends JpaRepository<Co
 
     // 진행 정보 조회 - 참여자가 지금까지 답한 문제 전체 조회
     List<CompetitionProblemSubmission> findByCompetitionParticipant(CompetitionParticipant competitionParticipant);
+
+    // 랭킹 - 참여자별 정답 개수 (점수 계산용)
+    int countByCompetitionParticipantAndIsCorrectTrue(CompetitionParticipant competitionParticipant);
 }
 
