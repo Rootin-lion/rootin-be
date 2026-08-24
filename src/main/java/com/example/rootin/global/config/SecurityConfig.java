@@ -41,6 +41,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/gemini/**").permitAll()
                         .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/competitions/*/rankings/top3").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/competitions/*/rankings").permitAll()
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(exception ->

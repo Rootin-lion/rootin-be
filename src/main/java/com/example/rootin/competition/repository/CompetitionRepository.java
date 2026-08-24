@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 public interface CompetitionRepository extends JpaRepository<Competition, Long> {
@@ -16,4 +17,7 @@ public interface CompetitionRepository extends JpaRepository<Competition, Long> 
 
     //종료된 대회 목록 조회
     Page<Competition> findByEndAtBeforeOrderByCompetitionDateDesc(LocalDateTime now, Pageable pageable);
+
+    // 주간/월간 랭킹 - 해당 기간(주/달)에 열린 대회 전체 조회
+    List<Competition> findByCompetitionDateBetween(LocalDate start, LocalDate end);
 }
