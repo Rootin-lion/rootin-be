@@ -5,6 +5,7 @@ import com.example.rootin.interview.domain.InterviewStatus;
 import com.example.rootin.member.domain.InterestField;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public record InterviewSessionResponseDto(
         Long interviewId,
@@ -12,6 +13,7 @@ public record InterviewSessionResponseDto(
         int questionCount,
         InterviewMode interviewMode,
         InterviewStatus status,
-        LocalDateTime startedAt
+        LocalDateTime startedAt,
+        List<InterviewQuestionDto> questions
 ) {
 }

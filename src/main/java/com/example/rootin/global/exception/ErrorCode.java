@@ -7,18 +7,24 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum ErrorCode {
 
-    BAD_REQUEST(400, "C400", "잘못된 요청입니다."),
-    UNAUTHORIZED(401, "C401", "인증이 필요합니다."),
-    FORBIDDEN(403, "C403", "접근할 수 없습니다."),
-    NOT_FOUND(404, "C404", "정보를 찾을 수 없습니다."),
-    CONFLICT(409, "C409", "요청이 현재 상태와 충돌합니다."),
-    OAUTH_PROVIDER_ERROR(502, "C502", "외부 인증 서비스 처리에 실패했습니다."),
-    INVALID_JWT_SECRET(500, "C503", "JWT Secret 설정이 올바르지 않습니다."),
-    INTERNAL_SERVER_ERROR(500, "C500", "서버 오류가 발생했습니다."),
+    BAD_REQUEST(400, "C400", "Bad request."),
+    UNAUTHORIZED(401, "C401", "Authentication is required."),
+    FORBIDDEN(403, "C403", "Access is forbidden."),
+    NOT_FOUND(404, "C404", "Resource not found."),
+    CONFLICT(409, "C409", "Conflict."),
+    OAUTH_PROVIDER_ERROR(502, "C502", "OAuth provider request failed."),
+    INVALID_JWT_SECRET(500, "C503", "JWT secret is misconfigured."),
+    INTERNAL_SERVER_ERROR(500, "C500", "Internal server error."),
 
-    COMPETITION_NOT_FOUND(404, "C404-1", "해당 날짜에 진행되는 대회가 없습니다."),
-    COMPETITION_NOT_JOINABLE(400, "C400-1", "지금은 참여할 수 없는 대회입니다."),
-    COMPETITION_ALREADY_JOINED(409, "C409-1", "이미 참여한 대회입니다.");
+    COMPETITION_NOT_FOUND(404, "C404-1", "Competition not found."),
+    COMPETITION_NOT_JOINABLE(400, "C400-1", "Competition is not joinable."),
+    COMPETITION_ALREADY_JOINED(409, "C409-1", "Competition already joined."),
+
+    GEMINI_BAD_REQUEST(400, "C504", "Gemini request failed."),
+    GEMINI_RATE_LIMITED(429, "C429", "Gemini rate limit exceeded."),
+    GEMINI_SERVER_ERROR(502, "C505", "Gemini server error."),
+    GEMINI_TIMEOUT(504, "C506", "Gemini request timed out."),
+    GEMINI_JSON_PARSE_ERROR(500, "C507", "Gemini response parsing failed.");
 
     private final int status;
     private final String code;

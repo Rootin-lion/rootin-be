@@ -30,4 +30,5 @@ public class InterviewController {
         Long memberId = (Long) authentication.getPrincipal();
         return ResponseEntity.ok(ApiResponse.success(interviewService.createSession(memberId, request)));
     }
+
 }

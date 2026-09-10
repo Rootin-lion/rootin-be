@@ -54,8 +54,11 @@ public class Interview {
                 field,
                 questionCount,
                 interviewMode,
-                InterviewStatus.CREATED,
+                InterviewStatus.IN_PROGRESS,
                 LocalDateTime.now()
         );
+    }
+    public void updateStatus(InterviewStatus status) {
+        this.status = status;
     }
 }
