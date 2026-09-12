@@ -27,7 +27,10 @@ public enum ErrorCode {
     COMPETITION_ALREADY_SUBMITTED(409, "C409-2", "이미 제출한 대회입니다."),
 
     PROBLEM_BOOKMARK_ALREADY_EXISTS(409, "C409-3", "이미 북마크한 문제입니다."),
-    PROBLEM_BOOKMARK_NOT_FOUND(404, "C404-5", "북마크 정보를 찾을 수 없습니다.");
+    PROBLEM_BOOKMARK_NOT_FOUND(404, "C404-5", "북마크 정보를 찾을 수 없습니다."),
+
+    INTERVIEW_MEMBER_NOT_FOUND(404, "C404-6", "회원을 찾을 수 없습니다."),
+    INTERVIEW_TOPIC_INSUFFICIENT(400, "C400-4", "선택 가능한 면접 토픽이 부족합니다.");
 
 
 
