@@ -8,7 +8,7 @@ public record InterviewCreateResponseDto(
         Long interviewId,
         InterestField category,
         InterviewStatus status,
-        int totalTopicCount
+        int questionCount
 ) {
 
     public static InterviewCreateResponseDto from(Interview interview) {
