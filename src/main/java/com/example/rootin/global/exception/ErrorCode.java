@@ -34,6 +34,7 @@ public enum ErrorCode {
     INTERVIEW_NOT_FOUND(404, "C404-7", "면접을 찾을 수 없습니다."),
     INTERVIEW_QUESTION_NOT_FOUND(404, "C404-8", "면접 질문을 찾을 수 없습니다."),
     INTERVIEW_QUESTION_MISMATCH(400, "C400-5", "해당 면접의 질문이 아닙니다."),
+    INTERVIEW_QUESTION_ALREADY_ANSWERED(409, "C409-5", "이미 답변이 제출된 면접 질문입니다."),
     INTERVIEW_INVALID_STATE(409, "C409-4", "면접 진행 상태가 올바르지 않습니다."),
     INTERVIEW_AI_SERVICE_ERROR(502, "C502-1", "AI 면접 서비스 처리에 실패했습니다.");
 

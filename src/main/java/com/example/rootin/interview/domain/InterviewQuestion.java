@@ -22,6 +22,9 @@ public class InterviewQuestion {
     @JoinColumn(name = "topic_id", nullable = false)
     private InterviewTopic topicId;
 
+    @OneToOne(mappedBy = "questionId", fetch = FetchType.LAZY)
+    private InterviewAnswer answer;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "question_type", nullable = false)
     private QuestionType questionType;

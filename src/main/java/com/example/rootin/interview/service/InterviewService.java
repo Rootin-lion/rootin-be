@@ -69,6 +69,9 @@ public class InterviewService {
         if(!question.getInterviewId().getId().equals(interviewId)){
             throw new CustomException(ErrorCode.INTERVIEW_QUESTION_MISMATCH);
         }
+        if (interviewAnswerRepository.existsByQuestionId_Id(question.getId())) {
+            throw new CustomException(ErrorCode.INTERVIEW_QUESTION_ALREADY_ANSWERED);
+        }
 
         //사용자 답변 저장
         InterviewAnswer answer = InterviewAnswer.create(question, request.getAnswer());
@@ -170,6 +173,21 @@ public class InterviewService {
         return interviewQuestionRepository.save(followUp);
     }
 
+    @Transactional 
+    public InterviewQuestionResponseDto getCurrentQuestion(Long interviewId) {
 
+        Interview interview = interviewRepository.findById(interviewId)
+                .orElseThrow(() -> new CustomException(ErrorCode.INTERVIEW_NOT_FOUND));
+
+        if (interview.getStatus() != InterviewStatus.IN_PROGRESS) {
+            throw new CustomException(ErrorCode.INTERVIEW_INVALID_STATE);
+        }
+
+        InterviewQuestion currentQuestion = interviewQuestionRepository
+                .findFirstByInterviewId_IdAndAnswerIsNullOrderByQuestionOrderDesc(interviewId)
+                .orElseThrow(() -> new CustomException(ErrorCode.INTERVIEW_INVALID_STATE));
+
+        return InterviewQuestionResponseDto.from(currentQuestion);
+    }
 
 }

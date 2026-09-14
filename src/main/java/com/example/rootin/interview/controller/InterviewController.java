@@ -5,6 +5,7 @@ import com.example.rootin.interview.dto.request.InterviewAnswerRequestDto;
 import com.example.rootin.interview.dto.request.InterviewCreateRequestDto;
 import com.example.rootin.interview.dto.response.InterviewAnswerSubmitResponseDto;
 import com.example.rootin.interview.dto.response.InterviewCreateResponseDto;
+import com.example.rootin.interview.dto.response.InterviewQuestionResponseDto;
 import com.example.rootin.interview.service.InterviewService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
@@ -44,5 +45,14 @@ public class InterviewController {
         InterviewAnswerSubmitResponseDto response = interviewService.submitAnswer(memberId, interviewId, request);
 
         return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    @GetMapping("/{interviewId}/questions/current")
+    @Operation(summary = "현재 질문 조회", description = "테스트 용")
+    public ResponseEntity<ApiResponse<InterviewQuestionResponseDto>> getCurrentQuestion(
+            @PathVariable Long interviewId
+    ) {
+        return ResponseEntity.ok(
+                ApiResponse.success(interviewService.getCurrentQuestion(interviewId)));
     }
 }
