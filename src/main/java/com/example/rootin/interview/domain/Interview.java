@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,8 +34,8 @@ public class Interview {
     @Column(name = "question_count" ,nullable = false)
     private int questionCount;
 
-    @Column(name = "current_question_order",nullable = false)
-    private int currentQuestionOrder;
+    @Column(name = "current_topic_order",nullable = false)
+    private int currentTopicOrder;
 
     @ElementCollection
     @CollectionTable(
@@ -44,6 +45,8 @@ public class Interview {
     @Column(name = "topic_id")
     private List<Long> topicIds = new ArrayList<>(); //면접시 물어볼 토픽 리스트(순서)
 
+    @Column(name = "completed_at")
+    private LocalDateTime completedAt;
 
 
     public static Interview create(
@@ -58,10 +61,27 @@ public class Interview {
         interview.member = member;
         interview.category = category;
         interview.status = InterviewStatus.IN_PROGRESS;
-        interview.currentQuestionOrder = 1;
+        interview.currentTopicOrder = 1;
         interview.questionCount = totalTopicCount;
         interview.topicIds = topicIds;
 
         return interview;
+    }
+
+    public Long getCurrentTopicId() {
+        return topicIds.get(currentTopicOrder - 1);
+    }
+
+    public boolean isLastTopic() {
+        return currentTopicOrder == questionCount;
+    }
+
+    public void moveToNextTopic() {
+        this.currentTopicOrder++;
+    }
+
+    public void complete() {
+        this.status = InterviewStatus.COMPLETED;
+        this.completedAt = LocalDateTime.now();
     }
 }
