@@ -2,6 +2,8 @@ package com.example.rootin.interview.domain;
 
 import com.example.rootin.member.domain.InterestField;
 import com.example.rootin.member.entity.Member;
+import com.example.rootin.global.exception.CustomException;
+import com.example.rootin.global.exception.ErrorCode;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -69,6 +71,9 @@ public class Interview {
     }
 
     public Long getCurrentTopicId() {
+        if (currentTopicOrder < 1 || currentTopicOrder > topicIds.size()) {
+            throw new CustomException(ErrorCode.INTERVIEW_INVALID_STATE);
+        }
         return topicIds.get(currentTopicOrder - 1);
     }
 

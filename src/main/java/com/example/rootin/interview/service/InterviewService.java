@@ -6,6 +6,8 @@ import com.example.rootin.interview.dto.request.InterviewCreateRequestDto;
 import com.example.rootin.interview.dto.response.*;
 import com.example.rootin.interview.exception.InterviewMemberNotFoundException;
 import com.example.rootin.interview.exception.InterviewTopicInsufficientException;
+import com.example.rootin.global.exception.CustomException;
+import com.example.rootin.global.exception.ErrorCode;
 import com.example.rootin.interview.repository.*;
 import com.example.rootin.member.entity.Member;
 import com.example.rootin.member.repository.MemberRepository;
@@ -57,15 +59,15 @@ public class InterviewService {
 
     public InterviewAnswerSubmitResponseDto submitAnswer(Long memberId, Long interviewId, InterviewAnswerRequestDto request){
         Interview interview = interviewRepository.findById(interviewId).orElseThrow(
-                ()->new IllegalArgumentException("면접이 존재하지않습니다."));
+                () -> new CustomException(ErrorCode.INTERVIEW_NOT_FOUND));
         if(!interview.getMember().getId().equals(memberId)){
-            throw new IllegalArgumentException("해당 면접에 접근할 수 없습니다."); //본인면접인지 체크
+            throw new CustomException(ErrorCode.FORBIDDEN); //본인면접인지 체크
         }
 
         InterviewQuestion question = interviewQuestionRepository.findById(request.getQuestionId()).orElseThrow(
-                ()-> new IllegalArgumentException("질문이 존재하지않습니다."));
+                () -> new CustomException(ErrorCode.INTERVIEW_QUESTION_NOT_FOUND));
         if(!question.getInterviewId().getId().equals(interviewId)){
-            throw new IllegalArgumentException("해당 면접의 질문이 아닙니다.");
+            throw new CustomException(ErrorCode.INTERVIEW_QUESTION_MISMATCH);
         }
 
         //사용자 답변 저장
@@ -130,7 +132,7 @@ public class InterviewService {
     private InterviewQuestion createNextBasicQuestion(Interview interview){
         Long topicId = interview.getCurrentTopicId();
         InterviewTopic topic = interviewTopicRepository.findById(topicId).orElseThrow(
-                ()->new IllegalArgumentException("면접 토픽이 존재하지 않습니다."));
+                () -> new CustomException(ErrorCode.INTERVIEW_INVALID_STATE));
 
         GeneratedQuestionResponseDto generated = interviewAiService.generateBasicQuestion(topic);
         int questionOrder = (int)interviewQuestionRepository.countByInterviewId_Id(interview.getId())+1;

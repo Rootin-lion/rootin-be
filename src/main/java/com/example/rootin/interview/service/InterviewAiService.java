@@ -4,6 +4,8 @@ import com.example.rootin.interview.domain.InterviewQuestion;
 import com.example.rootin.interview.domain.InterviewTopic;
 import com.example.rootin.interview.dto.response.AnswerEvaluationResponseDto;
 import com.example.rootin.interview.dto.response.GeneratedQuestionResponseDto;
+import com.example.rootin.global.exception.CustomException;
+import com.example.rootin.global.exception.ErrorCode;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpServerErrorException;
@@ -62,7 +64,7 @@ public class InterviewAiService {
         try {
             return objectMapper.readValue(json, GeneratedQuestionResponseDto.class);
         }catch (Exception e){
-            throw new IllegalArgumentException("질문 생성 응답 파싱에 실패했습니다.", e);
+            throw new CustomException(ErrorCode.INTERVIEW_AI_SERVICE_ERROR);
         }
 
     }
@@ -108,7 +110,7 @@ public class InterviewAiService {
         try{
             return objectMapper.readValue(json, AnswerEvaluationResponseDto.class);
         }catch (Exception e){
-            throw new IllegalArgumentException("답변 평가 응답 파싱에 실패했습니다.", e);
+            throw new CustomException(ErrorCode.INTERVIEW_AI_SERVICE_ERROR);
         }
     }
 
@@ -154,7 +156,7 @@ public class InterviewAiService {
         try {
             return objectMapper.readValue(json, GeneratedQuestionResponseDto.class);
         } catch (Exception e) {
-            throw new IllegalStateException("꼬리질문 생성 응답 파싱에 실패했습니다.", e);
+            throw new CustomException(ErrorCode.INTERVIEW_AI_SERVICE_ERROR);
         }
     }
 
@@ -177,7 +179,7 @@ public class InterviewAiService {
                     .asText();
 
         } catch (Exception e) {
-            throw new IllegalStateException("Gemini 응답 처리에 실패했습니다.", e);
+            throw new CustomException(ErrorCode.INTERVIEW_AI_SERVICE_ERROR);
         }
     }
     //503 Service Unavailable일 때 최대 3회 시도
@@ -198,18 +200,18 @@ public class InterviewAiService {
                         .body(String.class);
             } catch (HttpServerErrorException.ServiceUnavailable e) {
                 if (attempt == maxAttempts) {
-                    throw e;
+                    throw new CustomException(ErrorCode.INTERVIEW_AI_SERVICE_ERROR);
                 }
 
                 try {
                     Thread.sleep(1_000L * (1L << (attempt - 1)));
                 } catch (InterruptedException interruptedException) {
                     Thread.currentThread().interrupt();
-                    throw new IllegalStateException("Gemini API 재시도 대기 중 요청이 중단되었습니다.", interruptedException);
+                    throw new CustomException(ErrorCode.INTERVIEW_AI_SERVICE_ERROR);
                 }
             }
         }
 
-        throw new IllegalStateException("Gemini API 호출에 실패했습니다.");
+        throw new CustomException(ErrorCode.INTERVIEW_AI_SERVICE_ERROR);
     }
 }

@@ -33,13 +33,13 @@ public class InterviewController {
     }
 
     @PostMapping("/{interviewId}/answers")
-    public ResponseEntity<InterviewAnswerSubmitResponseDto> submitAnswer(
+    public ResponseEntity<ApiResponse<InterviewAnswerSubmitResponseDto>> submitAnswer(
             @AuthenticationPrincipal Long memberId,
             @PathVariable Long interviewId,
             @Valid @RequestBody InterviewAnswerRequestDto request
     ) {
         InterviewAnswerSubmitResponseDto response = interviewService.submitAnswer(memberId, interviewId, request);
 
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(ApiResponse.success(response));
     }
 }
