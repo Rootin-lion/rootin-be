@@ -6,6 +6,7 @@ import com.example.rootin.interview.dto.request.InterviewCreateRequestDto;
 import com.example.rootin.interview.dto.response.InterviewAnswerSubmitResponseDto;
 import com.example.rootin.interview.dto.response.InterviewCreateResponseDto;
 import com.example.rootin.interview.service.InterviewService;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -21,6 +22,7 @@ public class InterviewController {
     private final InterviewService interviewService;
 
     @PostMapping("/sessions")
+    @Operation(summary = "면접 세션 생성", description = "세션 생성과 동시에 첫 질문 반환")
     public ResponseEntity<ApiResponse<InterviewCreateResponseDto>> createInterview(
             @AuthenticationPrincipal Long memberId,
             @Valid @RequestBody InterviewCreateRequestDto request
@@ -33,6 +35,7 @@ public class InterviewController {
     }
 
     @PostMapping("/{interviewId}/answers")
+    @Operation(summary = "답변 제출 및 다음 질문 반환", description = "답변을 분석하여 꼬리/기본 질문 반환")
     public ResponseEntity<ApiResponse<InterviewAnswerSubmitResponseDto>> submitAnswer(
             @AuthenticationPrincipal Long memberId,
             @PathVariable Long interviewId,
