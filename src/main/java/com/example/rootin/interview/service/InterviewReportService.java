@@ -2,6 +2,7 @@ package com.example.rootin.interview.service;
 
 import com.example.rootin.interview.domain.*;
 import com.example.rootin.interview.dto.response.GeneratedReportResponseDto;
+import com.example.rootin.interview.dto.response.InterviewReportItemResponseDto;
 import com.example.rootin.interview.dto.response.InterviewReportResponseDto;
 import com.example.rootin.interview.repository.InterviewEvaluationRepository;
 import com.example.rootin.interview.repository.InterviewReportRepository;
@@ -13,7 +14,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import tools.jackson.databind.ObjectMapper;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -25,6 +28,7 @@ public class InterviewReportService {
     private final InterviewReportRepository interviewReportRepository;
     private final InterviewEvaluationRepository evaluationRepository;
     private final InterviewAiService interviewAiService;
+    private final ObjectMapper objectMapper;
 
     @Transactional
     public InterviewReport createReport(Long memberId, Long interviewId) {
@@ -67,8 +71,8 @@ public class InterviewReportService {
             report.complete(
                     averageAccuracy,
                     generated.overallFeedback(),
-                    generated.strengths(),
-                    generated.weaknesses()
+                    serializeFeedbackItems(generated.strengths()),
+                    serializeFeedbackItems(generated.weaknesses())
             );
 
         } catch (Exception e) {
@@ -103,6 +107,35 @@ public class InterviewReportService {
 
         List<InterviewEvaluation> evaluations = evaluationRepository.findAllByInterviewId(interviewId);
 
-        return InterviewReportResponseDto.from(report, evaluations);
+        return InterviewReportResponseDto.from(
+                report,
+                evaluations,
+                deserializeFeedbackItems(report.getStrengths()),
+                deserializeFeedbackItems(report.getWeaknesses())
+        );
+    }
+
+    private String serializeFeedbackItems(List<InterviewReportItemResponseDto> items) {
+        try {
+            return objectMapper.writeValueAsString(items);
+        } catch (Exception e) {
+            throw new IllegalStateException("면접 피드백 직렬화에 실패했습니다.", e);
+        }
+    }
+
+    private List<InterviewReportItemResponseDto> deserializeFeedbackItems(String json) {
+        if (json == null || json.isBlank()) {
+            return List.of();
+        }
+
+        try {
+            InterviewReportItemResponseDto[] items = objectMapper.readValue(
+                    json,
+                    InterviewReportItemResponseDto[].class
+            );
+            return Arrays.asList(items);
+        } catch (Exception e) {
+            throw new IllegalStateException("면접 피드백 역직렬화에 실패했습니다.", e);
+        }
     }
 }

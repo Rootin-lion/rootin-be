@@ -8,7 +8,7 @@ import com.example.rootin.member.domain.InterestField;
 import java.time.LocalDateTime;
 import java.util.List;
 
-//최종리포트
+//최종리포트 GET
 public record InterviewReportResponseDto(
         Long interviewId,
         InterestField category,
@@ -17,8 +17,8 @@ public record InterviewReportResponseDto(
         InterviewReportStatus status,
         Integer averageAccuracy,
         String overallFeedback,
-        String strengths,
-        String weaknesses,
+        List<InterviewReportItemResponseDto> strengths,
+        List<InterviewReportItemResponseDto> weaknesses,
         List<InterviewQuestionResultDto> questions
 ) {
     public static InterviewReportResponseDto generating(InterviewReport report) {
@@ -36,7 +36,12 @@ public record InterviewReportResponseDto(
         );
     }
 
-    public static InterviewReportResponseDto from(InterviewReport report, List<InterviewEvaluation> evaluations) {
+    public static InterviewReportResponseDto from(
+            InterviewReport report,
+            List<InterviewEvaluation> evaluations,
+            List<InterviewReportItemResponseDto> strengths,
+            List<InterviewReportItemResponseDto> weaknesses
+    ) {
 
         List<InterviewQuestionResultDto> questions =
                 evaluations.stream()
@@ -51,8 +56,8 @@ public record InterviewReportResponseDto(
                 report.getStatus(),
                 report.getAverageAccuracy(),
                 report.getOverallFeedback(),
-                report.getStrengths(),
-                report.getWeaknesses(),
+                strengths,
+                weaknesses,
                 questions
         );
     }

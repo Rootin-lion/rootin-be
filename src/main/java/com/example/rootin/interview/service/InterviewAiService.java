@@ -259,20 +259,30 @@ public class InterviewAiService {
             - 2~3문장, 150자 이내로 간결하게 작성
 
             strengths:
-            - 사용자가 잘한 부분
-            - 구체적인 CS 개념을 중심으로 작성
-            - 여러 항목이 있다면 줄바꿈으로 구분
+            - 면접 전체에서 잘한 부분을 2~3개 선정
+            - 각 항목을 title과 content로 구분
+            - title은 잘한 핵심 개념을 짧게 작성
+            - content는 잘한 이유를 1문장으로 간결하게 작성
+            - 각 content는 50자 내외로 작성
+            - 동일하거나 유사한 내용을 중복하지 않음
 
             weaknesses:
-            - 추가 학습이 필요한 부분
-            - 부족했던 CS 개념을 중심으로 작성
-            - 여러 항목이 있다면 줄바꿈으로 구분
+            - 면접 전체에서 보완이 필요한 부분을 1~3개 선정
+            - 각 항목을 title과 content로 구분
+            - title은 보완이 필요한 핵심 개념을 짧게 작성
+            - content는 부족한 점 또는 보완 방향을 1문장으로 간결하게 작성
+            - 각 content는 50자 내외로 작성
+            - 동일하거나 유사한 내용을 중복하지 않음
 
             반드시 다음 JSON 형식으로 응답하세요.
             {
               "overallFeedback": "...",
-              "strengths": "...",
-              "weaknesses": "..."
+              "strengths": [
+                { "title": "핵심 강점 제목", "content": "강점에 대한 구체적인 설명" }
+              ],
+              "weaknesses": [
+                { "title": "보완점 제목", "content": "보완이 필요한 이유와 방향" }
+              ]
             }
             """.formatted(interviewContent);
 
