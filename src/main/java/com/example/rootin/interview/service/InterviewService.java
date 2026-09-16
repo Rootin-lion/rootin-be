@@ -174,10 +174,13 @@ public class InterviewService {
     }
 
     @Transactional 
-    public InterviewQuestionResponseDto getCurrentQuestion(Long interviewId) {
+    public InterviewQuestionResponseDto getCurrentQuestion(Long memberId, Long interviewId) {
 
         Interview interview = interviewRepository.findById(interviewId)
                 .orElseThrow(() -> new CustomException(ErrorCode.INTERVIEW_NOT_FOUND));
+        if (!interview.getMember().getId().equals(memberId)){
+            throw new CustomException(ErrorCode.FORBIDDEN);
+        }
 
         if (interview.getStatus() != InterviewStatus.IN_PROGRESS) {
             throw new CustomException(ErrorCode.INTERVIEW_INVALID_STATE);

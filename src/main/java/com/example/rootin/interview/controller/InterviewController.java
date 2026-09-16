@@ -50,9 +50,9 @@ public class InterviewController {
     @GetMapping("/{interviewId}/questions/current")
     @Operation(summary = "현재 질문 조회", description = "테스트 용")
     public ResponseEntity<ApiResponse<InterviewQuestionResponseDto>> getCurrentQuestion(
-            @PathVariable Long interviewId
-    ) {
+            @AuthenticationPrincipal Long memberId,
+            @PathVariable Long interviewId) {
         return ResponseEntity.ok(
-                ApiResponse.success(interviewService.getCurrentQuestion(interviewId)));
+                ApiResponse.success(interviewService.getCurrentQuestion(memberId, interviewId)));
     }
 }
