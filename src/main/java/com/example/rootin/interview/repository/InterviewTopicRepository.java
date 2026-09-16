@@ -1,7 +1,6 @@
 package com.example.rootin.interview.repository;
 
 import com.example.rootin.interview.domain.InterviewTopic;
-import com.example.rootin.member.domain.InterestField;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
