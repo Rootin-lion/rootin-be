@@ -1,11 +1,12 @@
 package com.example.rootin.interview.controller;
 
 import com.example.rootin.global.common.ApiResponse;
+import com.example.rootin.interview.domain.InterviewReport;
+import com.example.rootin.interview.domain.InterviewReportStatus;
 import com.example.rootin.interview.dto.request.InterviewAnswerRequestDto;
 import com.example.rootin.interview.dto.request.InterviewCreateRequestDto;
-import com.example.rootin.interview.dto.response.InterviewAnswerSubmitResponseDto;
-import com.example.rootin.interview.dto.response.InterviewCreateResponseDto;
-import com.example.rootin.interview.dto.response.InterviewQuestionResponseDto;
+import com.example.rootin.interview.dto.response.*;
+import com.example.rootin.interview.service.InterviewReportService;
 import com.example.rootin.interview.service.InterviewService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 public class InterviewController {
 
     private final InterviewService interviewService;
+    private final InterviewReportService interviewReportService;
 
     @PostMapping("/sessions")
     @Operation(summary = "면접 세션 생성", description = "세션 생성과 동시에 첫 질문 반환")
@@ -54,5 +56,34 @@ public class InterviewController {
             @PathVariable Long interviewId) {
         return ResponseEntity.ok(
                 ApiResponse.success(interviewService.getCurrentQuestion(memberId, interviewId)));
+    }
+
+    @PostMapping("/{interviewId}/report")
+    @Operation(summary = "면접 리포트 생성")
+    public ResponseEntity<ApiResponse<InterviewReportCreateResponseDto>> createReport(
+            @AuthenticationPrincipal Long memberId,
+            @PathVariable Long interviewId
+    ) {
+        InterviewReport report = interviewReportService.createReport(memberId, interviewId);
+
+        // 이미 COMPLETED인 경우에는 다시 Gemini 호출할 필요 없음
+        if (report.getStatus() == InterviewReportStatus.GENERATING) {
+            interviewReportService.generateReportAsync(report.getId());
+        }
+
+        return ResponseEntity
+                .accepted()
+                .body(ApiResponse.success(InterviewReportCreateResponseDto.from(report)));
+    }
+
+    @GetMapping("/{interviewId}/report")
+    @Operation(summary = "면접 리포트 조회")
+    public ResponseEntity<ApiResponse<InterviewReportResponseDto>> getReport(
+            @AuthenticationPrincipal Long memberId,
+            @PathVariable Long interviewId
+    ) {
+        InterviewReportResponseDto response = interviewReportService.getReport(memberId, interviewId);
+
+        return ResponseEntity.ok(ApiResponse.success(response));
     }
 }
