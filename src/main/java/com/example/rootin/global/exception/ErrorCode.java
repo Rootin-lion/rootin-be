@@ -36,7 +36,10 @@ public enum ErrorCode {
     INTERVIEW_QUESTION_MISMATCH(400, "C400-5", "해당 면접의 질문이 아닙니다."),
     INTERVIEW_QUESTION_ALREADY_ANSWERED(409, "C409-5", "이미 답변이 제출된 면접 질문입니다."),
     INTERVIEW_INVALID_STATE(409, "C409-4", "면접 진행 상태가 올바르지 않습니다."),
-    INTERVIEW_AI_SERVICE_ERROR(502, "C502-1", "AI 면접 서비스 처리에 실패했습니다.");
+    INTERVIEW_REPORT_NOT_FOUND(404, "C404-9", "면접 리포트를 찾을 수 없습니다."),
+    INTERVIEW_REPORT_NOT_CREATABLE(409, "C409-6", "완료된 면접만 리포트를 생성할 수 있습니다."),
+    INTERVIEW_AI_SERVICE_ERROR(502, "C502-1", "AI 면접 서비스 처리에 실패했습니다."),
+    INTERVIEW_REPORT_GENERATION_FAILED(502, "C502-2", "면접 리포트 생성에 실패했습니다.");
 
 
 

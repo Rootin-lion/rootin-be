@@ -1,11 +1,14 @@
 package com.example.rootin.interview.service;
 
+import com.example.rootin.interview.domain.InterviewAnswer;
+import com.example.rootin.interview.domain.InterviewEvaluation;
 import com.example.rootin.interview.domain.InterviewQuestion;
 import com.example.rootin.interview.domain.InterviewTopic;
 import com.example.rootin.interview.dto.response.AnswerEvaluationResponseDto;
 import com.example.rootin.interview.dto.response.GeneratedQuestionResponseDto;
 import com.example.rootin.global.exception.CustomException;
 import com.example.rootin.global.exception.ErrorCode;
+import com.example.rootin.interview.dto.response.GeneratedReportResponseDto;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpServerErrorException;
@@ -213,5 +216,82 @@ public class InterviewAiService {
         }
 
         throw new CustomException(ErrorCode.INTERVIEW_AI_SERVICE_ERROR);
+    }
+
+    public GeneratedReportResponseDto generateReport(List<InterviewEvaluation> evaluations){
+        StringBuilder interviewContent = new StringBuilder();
+
+        for(InterviewEvaluation evaluation : evaluations){
+            InterviewAnswer answer = evaluation.getAnswerId();
+            InterviewQuestion question = answer.getQuestionId();
+            interviewContent.append("""
+                [질문 %d]
+                토픽: %s
+                질문: %s
+                사용자 답변: %s
+                정확도: %d
+                평가: %s
+                피드백: %s
+                부족한 키워드: %s
+                """.formatted(
+                    question.getQuestionOrder(),
+                    question.getTopicId().getTopicName(),
+                    question.getQuestion(),
+                    answer.getAnswer(),
+                    evaluation.getAccuracy(),
+                    evaluation.getAnswerLevel(),
+                    evaluation.getFeedback(),
+                    evaluation.getMissingKeywords()
+            ));
+        }
+
+        String prompt = """
+            당신은 CS 기술 면접 결과 분석가입니다.
+            아래는 한 사용자의 전체 면접 결과입니다.
+            %s
+            전체 면접을 종합하여 다음 내용을 작성하세요.
+
+            overallFeedback:
+            - 전체 면접 결과에 대한 종합 피드백
+            - 사용자가 잘 이해하고 있는 부분과 보완해야 할 부분을 핵심만 요약
+            - 세부 개념이나 키워드를 과도하게 나열하지 않음
+            - strengths, weaknesses의 내용을 그대로 반복하지 않음
+            - 2~3문장, 150자 이내로 간결하게 작성
+
+            strengths:
+            - 면접 전체에서 잘한 부분을 2~3개 선정
+            - 각 항목을 title과 content로 구분
+            - title은 잘한 핵심 개념을 짧게 작성
+            - content는 잘한 이유를 1문장으로 간결하게 작성
+            - 각 content는 50자 내외로 작성
+            - 동일하거나 유사한 내용을 중복하지 않음
+
+            weaknesses:
+            - 면접 전체에서 보완이 필요한 부분을 1~3개 선정
+            - 각 항목을 title과 content로 구분
+            - title은 보완이 필요한 핵심 개념을 짧게 작성
+            - content는 부족한 점 또는 보완 방향을 1문장으로 간결하게 작성
+            - 각 content는 50자 내외로 작성
+            - 동일하거나 유사한 내용을 중복하지 않음
+
+            반드시 다음 JSON 형식으로 응답하세요.
+            {
+              "overallFeedback": "...",
+              "strengths": [
+                { "title": "핵심 강점 제목", "content": "강점에 대한 구체적인 설명" }
+              ],
+              "weaknesses": [
+                { "title": "보완점 제목", "content": "보완이 필요한 이유와 방향" }
+              ]
+            }
+            """.formatted(interviewContent);
+
+        String json = callGemini(prompt);
+
+        try {
+            return objectMapper.readValue(json, GeneratedReportResponseDto.class);
+        } catch (Exception e) {
+            throw new IllegalStateException("리포트 AI 응답 파싱에 실패했습니다.", e);
+        }
     }
 }
