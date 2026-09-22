@@ -1,4 +1,4 @@
-package com.example.rootin.mypage.service;
+package com.example.rootin.mypage.report.service;
 
 import com.example.rootin.global.common.PageResponse;
 import com.example.rootin.global.exception.CustomException;
@@ -6,7 +6,7 @@ import com.example.rootin.global.exception.ErrorCode;
 import com.example.rootin.interview.domain.InterviewQuestion;
 import com.example.rootin.interview.domain.InterviewReport;
 import com.example.rootin.interview.domain.InterviewReportStatus;
-import com.example.rootin.interview.dto.response.MypageReportResponseDto;
+import com.example.rootin.mypage.report.dto.MypageReportResponseDto;
 import com.example.rootin.interview.repository.InterviewQuestionRepository;
 import com.example.rootin.interview.repository.InterviewReportRepository;
 import lombok.RequiredArgsConstructor;
