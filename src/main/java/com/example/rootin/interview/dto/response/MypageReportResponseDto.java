@@ -21,7 +21,7 @@ public record MypageReportResponseDto(
         String overallFeedback
 ) {
     public static MypageReportResponseDto from(InterviewReport report, List<String> topicNames) {
-        Interview interview = report.getInterviewId();
+        Interview interview = report.getInterview();
 
         return new MypageReportResponseDto(
                 report.getId(),

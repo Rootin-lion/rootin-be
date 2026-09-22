@@ -72,10 +72,10 @@ public class InterviewService {
 
         InterviewQuestion question = interviewQuestionRepository.findById(request.getQuestionId()).orElseThrow(
                 () -> new CustomException(ErrorCode.INTERVIEW_QUESTION_NOT_FOUND));
-        if(!question.getInterviewId().getId().equals(interviewId)){
+        if(!question.getInterview().getId().equals(interviewId)){
             throw new CustomException(ErrorCode.INTERVIEW_QUESTION_MISMATCH);
         }
-        if (interviewAnswerRepository.existsByQuestionId_Id(question.getId())) {
+        if (interviewAnswerRepository.existsByQuestion_Id(question.getId())) {
             throw new CustomException(ErrorCode.INTERVIEW_QUESTION_ALREADY_ANSWERED);
         }
 
@@ -93,8 +93,8 @@ public class InterviewService {
 
         //AnswerLevel이 EMBIGUOUS일 경우 꼬리질문 여부
         if(aiEvaluation.level() == AnswerLevel.AMBIGUOUS){
-            boolean followUpExist = interviewQuestionRepository.existsByInterviewId_IdAndTopicId_IdAndQuestionType(
-                    interviewId, question.getTopicId().getId(), QuestionType.FOLLOW_UP);
+            boolean followUpExist = interviewQuestionRepository.existsByInterview_IdAndTopic_IdAndQuestionType(
+                    interviewId, question.getTopic().getId(), QuestionType.FOLLOW_UP);
 
             if(!followUpExist){
                 InterviewQuestion followUp = createFollowUpQuestion(interview, question, request.getAnswer(), aiEvaluation);
@@ -144,7 +144,7 @@ public class InterviewService {
                 () -> new CustomException(ErrorCode.INTERVIEW_INVALID_STATE));
 
         GeneratedQuestionResponseDto generated = interviewAiService.generateBasicQuestion(topic);
-        int questionOrder = (int)interviewQuestionRepository.countByInterviewId_Id(interview.getId())+1;
+        int questionOrder = (int)interviewQuestionRepository.countByInterview_Id(interview.getId())+1;
         InterviewQuestion question = InterviewQuestion.create(
                 interview, topic, QuestionType.BASIC, generated.question(),
                 generated.targetKeywords(), generated.evaluationCriteria(), questionOrder
@@ -163,12 +163,12 @@ public class InterviewService {
         GeneratedQuestionResponseDto generated = interviewAiService.generateFollowUpQuestion(
                         previousQuestion, answer, evaluation);
 
-        int questionOrder = (int) interviewQuestionRepository.countByInterviewId_Id(interview.getId()) + 1;
+        int questionOrder = (int) interviewQuestionRepository.countByInterview_Id(interview.getId()) + 1;
 
         InterviewQuestion followUp =
                 InterviewQuestion.create(
                         interview,
-                        previousQuestion.getTopicId(),
+                        previousQuestion.getTopic(),
                         QuestionType.FOLLOW_UP,
                         generated.question(),
                         generated.targetKeywords(),
@@ -193,7 +193,7 @@ public class InterviewService {
         }
 
         InterviewQuestion currentQuestion = interviewQuestionRepository
-                .findFirstByInterviewId_IdAndAnswerIsNullOrderByQuestionOrderDesc(interviewId)
+                .findFirstByInterview_IdAndAnswerIsNullOrderByQuestionOrderDesc(interviewId)
                 .orElseThrow(() -> new CustomException(ErrorCode.INTERVIEW_INVALID_STATE));
 
         return InterviewQuestionResponseDto.from(currentQuestion);

@@ -19,13 +19,13 @@ public record InterviewQuestionResultDto(
             InterviewEvaluation evaluation
     ) {
 
-        var answer = evaluation.getAnswerId();
-        var question = answer.getQuestionId();
+        var answer = evaluation.getAnswer();
+        var question = answer.getQuestion();
 
         return new InterviewQuestionResultDto(
                 question.getId(),
                 question.getQuestionOrder(),
-                question.getTopicId().getTopicName(),
+                question.getTopic().getTopicName(),
                 question.getQuestion(),
                 answer.getAnswer(),
                 evaluation.getAccuracy(),

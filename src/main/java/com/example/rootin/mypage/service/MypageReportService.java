@@ -40,7 +40,7 @@ public class MypageReportService {
         );
 
         Page<InterviewReport> reports = interviewReportRepository
-                .findByInterviewId_MemberIdAndStatus(
+                .findByInterview_Member_IdAndStatus(
                         memberId,
                         InterviewReportStatus.COMPLETED,
                         pageable
@@ -55,7 +55,7 @@ public class MypageReportService {
         }
 
         List<Long> interviewIds = reports.getContent().stream()
-                .map(report -> report.getInterviewId().getId())
+                .map(report -> report.getInterview().getId())
                 .toList();
         //BASIC 질문 한번에 조회
         Map<Long, List<InterviewQuestion>> basicQuestionsByInterview = interviewIds.isEmpty()
@@ -64,14 +64,14 @@ public class MypageReportService {
                         .findBasicQuestionsByInterviewIds(interviewIds)
                         .stream()
                         //면접 id별로 질문 그룹화
-                        .collect(Collectors.groupingBy(question -> question.getInterviewId().getId()));
+                        .collect(Collectors.groupingBy(question -> question.getInterview().getId()));
 
         Page<MypageReportResponseDto> responsePage = reports.map(report -> {
             List<InterviewQuestion> basicQuestions = basicQuestionsByInterview //현재 질문의 BASIC 질문 찾기
-                    .getOrDefault(report.getInterviewId().getId(), List.of());
+                    .getOrDefault(report.getInterview().getId(), List.of());
 
             List<String> topicNames = basicQuestions.stream() //질문의 topicName만 추출
-                    .map(question -> question.getTopicId().getTopicName())
+                    .map(question -> question.getTopic().getTopicName())
                     .toList();
 
             return MypageReportResponseDto.from(

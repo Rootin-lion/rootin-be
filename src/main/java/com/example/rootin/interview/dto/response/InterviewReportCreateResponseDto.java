@@ -10,7 +10,7 @@ public record InterviewReportCreateResponseDto(
 ) {
     public static InterviewReportCreateResponseDto from(InterviewReport report) {
         return new InterviewReportCreateResponseDto(
-                report.getInterviewId().getId(),
+                report.getInterview().getId(),
                 report.getStatus()
         );
     }

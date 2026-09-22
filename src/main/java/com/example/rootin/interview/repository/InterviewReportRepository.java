@@ -12,10 +12,10 @@ import java.util.Optional;
 
 @Repository
 public interface InterviewReportRepository extends JpaRepository<InterviewReport, Long> {
-    Optional<InterviewReport> findByInterviewId_Id(Long interviewId);
+    Optional<InterviewReport> findByInterview_Id(Long interviewId);
 
-    @EntityGraph(attributePaths = "interviewId")
-    Page<InterviewReport> findByInterviewId_MemberIdAndStatus(
+    @EntityGraph(attributePaths = "interview")
+    Page<InterviewReport> findByInterview_Member_IdAndStatus(
             Long memberId,
             InterviewReportStatus status,
             Pageable pageable

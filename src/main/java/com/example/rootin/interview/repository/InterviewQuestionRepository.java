@@ -13,16 +13,16 @@ import java.util.Optional;
 
 @Repository
 public interface InterviewQuestionRepository extends JpaRepository<InterviewQuestion, Long> {
-    boolean existsByInterviewId_IdAndTopicId_IdAndQuestionType(Long interviewId, Long topicId, QuestionType questionType);
-    long countByInterviewId_Id(Long interviewId); //질문 순서 정할 때 사용
+    boolean existsByInterview_IdAndTopic_IdAndQuestionType(Long interviewId, Long topicId, QuestionType questionType);
+    long countByInterview_Id(Long interviewId); //질문 순서 정할 때 사용
     Optional<InterviewQuestion>
-    findFirstByInterviewId_IdAndAnswerIsNullOrderByQuestionOrderDesc(Long interviewId);
+    findFirstByInterview_IdAndAnswerIsNullOrderByQuestionOrderDesc(Long interviewId);
 
-    @EntityGraph(attributePaths = "topicId")
+    @EntityGraph(attributePaths = "topic")
     @Query("""
             SELECT question
             FROM InterviewQuestion question
-            WHERE question.interviewId.id IN :interviewIds
+            WHERE question.interview.id IN :interviewIds
               AND question.questionType = com.example.rootin.interview.domain.QuestionType.BASIC
             ORDER BY question.questionOrder ASC
             """)

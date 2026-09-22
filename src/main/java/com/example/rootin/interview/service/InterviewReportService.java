@@ -44,7 +44,7 @@ public class InterviewReportService {
             throw new CustomException(ErrorCode.INTERVIEW_REPORT_NOT_CREATABLE);
         }
 
-        return interviewReportRepository.findByInterviewId_Id(interviewId)
+        return interviewReportRepository.findByInterview_Id(interviewId)
                 .orElseGet(() -> interviewReportRepository.save(InterviewReport.create(interview)));
     }
 
@@ -55,7 +55,7 @@ public class InterviewReportService {
         InterviewReport report = interviewReportRepository.findById(reportId)
                         .orElseThrow(() -> new CustomException(ErrorCode.INTERVIEW_REPORT_NOT_FOUND));
         try {
-            Long interviewId = report.getInterviewId().getId();
+            Long interviewId = report.getInterview().getId();
             List<InterviewEvaluation> evaluations = evaluationRepository.findAllByInterviewId(interviewId);
 
             if (evaluations.isEmpty()) {
@@ -86,10 +86,10 @@ public class InterviewReportService {
     public InterviewReportResponseDto getReport(Long memberId, Long interviewId) {
 
         InterviewReport report = interviewReportRepository
-                        .findByInterviewId_Id(interviewId)
+                        .findByInterview_Id(interviewId)
                         .orElseThrow(() -> new CustomException(ErrorCode.INTERVIEW_REPORT_NOT_FOUND));
 
-        if (!report.getInterviewId().getMember().getId().equals(memberId)) {
+        if (!report.getInterview().getMember().getId().equals(memberId)) {
             throw new CustomException(ErrorCode.FORBIDDEN);
         }
 

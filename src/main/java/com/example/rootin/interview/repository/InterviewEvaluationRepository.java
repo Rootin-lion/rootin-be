@@ -13,10 +13,10 @@ public interface InterviewEvaluationRepository extends JpaRepository<InterviewEv
     @Query("""
             SELECT e
             FROM InterviewEvaluation e
-            JOIN FETCH e.answerId a
-            JOIN FETCH a.questionId q
-            JOIN FETCH q.topicId
-            WHERE q.interviewId.id = :interviewId
+            JOIN FETCH e.answer a
+            JOIN FETCH a.question q
+            JOIN FETCH q.topic
+            WHERE q.interview.id = :interviewId
             ORDER BY q.questionOrder
             """)
     List<InterviewEvaluation> findAllByInterviewId(@Param("interviewId") Long interviewId);

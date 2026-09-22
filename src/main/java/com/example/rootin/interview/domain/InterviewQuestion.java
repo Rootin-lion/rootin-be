@@ -16,13 +16,13 @@ public class InterviewQuestion {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "interview_id", nullable = false)
-    private Interview interviewId;
+    private Interview interview;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "topic_id", nullable = false)
-    private InterviewTopic topicId;
+    private InterviewTopic topic;
 
-    @OneToOne(mappedBy = "questionId", fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "question", fetch = FetchType.LAZY)
     private InterviewAnswer answer;
 
     @Enumerated(EnumType.STRING)
@@ -42,8 +42,8 @@ public class InterviewQuestion {
     private int questionOrder;
 
     public static InterviewQuestion create(
-            Interview interviewId,
-            InterviewTopic topicId,
+            Interview interview,
+            InterviewTopic topic,
             QuestionType questionType,
             String question,
             String targetKeywords,
@@ -52,8 +52,8 @@ public class InterviewQuestion {
     ) {
         InterviewQuestion interviewQuestion = new InterviewQuestion();
 
-        interviewQuestion.interviewId = interviewId;
-        interviewQuestion.topicId = topicId;
+        interviewQuestion.interview = interview;
+        interviewQuestion.topic = topic;
         interviewQuestion.questionType = questionType;
         interviewQuestion.question = question;
         interviewQuestion.targetKeywords = targetKeywords;
