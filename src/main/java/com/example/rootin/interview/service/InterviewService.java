@@ -41,7 +41,13 @@ public class InterviewService {
         }
 
         List<Long> selectedTopicIds = selectedTopics.stream().map(InterviewTopic::getId).toList();
-        Interview interview = Interview.create(member, request.getCategory(), request.getQuestionCount(), selectedTopicIds);
+        Interview interview = Interview.create(
+                member,
+                request.getCategory(),
+                request.getInterviewMode(),
+                request.getQuestionCount(),
+                selectedTopicIds
+        );
         interviewRepository.save(interview);
 
         //첫 topic

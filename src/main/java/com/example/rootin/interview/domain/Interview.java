@@ -33,6 +33,10 @@ public class Interview {
     @Column(name = "status", nullable = false)
     private InterviewStatus status;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "interview_mode", nullable = false)
+    private InterviewMode interviewMode;
+
     @Column(name = "question_count" ,nullable = false)
     private int questionCount;
 
@@ -54,6 +58,7 @@ public class Interview {
     public static Interview create(
             Member member,
             InterestField category,
+            InterviewMode interviewMode,
             int totalTopicCount,
             List<Long> topicIds
     ) {
@@ -62,6 +67,7 @@ public class Interview {
 
         interview.member = member;
         interview.category = category;
+        interview.interviewMode = interviewMode;
         interview.status = InterviewStatus.IN_PROGRESS;
         interview.currentTopicOrder = 1;
         interview.questionCount = totalTopicCount;
