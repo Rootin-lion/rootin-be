@@ -39,9 +39,10 @@ public enum ErrorCode {
     INTERVIEW_REPORT_NOT_FOUND(404, "C404-9", "면접 리포트를 찾을 수 없습니다."),
     INTERVIEW_REPORT_NOT_CREATABLE(409, "C409-6", "완료된 면접만 리포트를 생성할 수 있습니다."),
     INTERVIEW_AI_SERVICE_ERROR(502, "C502-1", "AI 면접 서비스 처리에 실패했습니다."),
-    INTERVIEW_REPORT_GENERATION_FAILED(502, "C502-2", "면접 리포트 생성에 실패했습니다.");
+    INTERVIEW_REPORT_GENERATION_FAILED(502, "C502-2", "면접 리포트 생성에 실패했습니다."),
 
-
+    MYPAGE_REPORT_LIST_EMPTY(404, "C404-10", "조회할 수 있는 면접 리포트가 없습니다."),
+    MYPAGE_REPORT_PAGE_NOT_FOUND(404, "C404-11", "요청한 리포트 페이지를 찾을 수 없습니다.");
 
     private final int status;
     private final String code;
