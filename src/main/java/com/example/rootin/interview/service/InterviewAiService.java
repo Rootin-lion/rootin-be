@@ -222,8 +222,8 @@ public class InterviewAiService {
         StringBuilder interviewContent = new StringBuilder();
 
         for(InterviewEvaluation evaluation : evaluations){
-            InterviewAnswer answer = evaluation.getAnswerId();
-            InterviewQuestion question = answer.getQuestionId();
+            InterviewAnswer answer = evaluation.getAnswer();
+            InterviewQuestion question = answer.getQuestion();
             interviewContent.append("""
                 [질문 %d]
                 토픽: %s
@@ -235,7 +235,7 @@ public class InterviewAiService {
                 부족한 키워드: %s
                 """.formatted(
                     question.getQuestionOrder(),
-                    question.getTopicId().getTopicName(),
+                    question.getTopic().getTopicName(),
                     question.getQuestion(),
                     answer.getAnswer(),
                     evaluation.getAccuracy(),

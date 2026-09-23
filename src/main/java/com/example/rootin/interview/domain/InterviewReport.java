@@ -18,7 +18,7 @@ public class InterviewReport {
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "interview_id", nullable = false)
-    private Interview interviewId;
+    private Interview interview;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -40,11 +40,11 @@ public class InterviewReport {
 
     private LocalDateTime completedAt;
 
-    public static InterviewReport create(Interview interviewId) {
+    public static InterviewReport create(Interview interview) {
 
         InterviewReport report = new InterviewReport();
 
-        report.interviewId = interviewId;
+        report.interview = interview;
         report.status = InterviewReportStatus.GENERATING;
         report.createdAt = LocalDateTime.now();
 

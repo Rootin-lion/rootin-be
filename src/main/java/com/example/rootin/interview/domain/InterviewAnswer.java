@@ -16,7 +16,7 @@ public class InterviewAnswer {
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "question_id", nullable = false)
-    private InterviewQuestion questionId;
+    private InterviewQuestion question;
 
     @Column(name = "answer", nullable = false, columnDefinition = "TEXT")
     private String answer;
@@ -24,10 +24,10 @@ public class InterviewAnswer {
     @Column(name = "answered_at", nullable = false)
     private LocalDateTime answeredAt;
 
-    public static InterviewAnswer create(InterviewQuestion questionId, String answer) {
+    public static InterviewAnswer create(InterviewQuestion question, String answer) {
         InterviewAnswer interviewAnswer = new InterviewAnswer();
 
-        interviewAnswer.questionId = questionId;
+        interviewAnswer.question = question;
         interviewAnswer.answer = answer;
         interviewAnswer.answeredAt = LocalDateTime.now();
 

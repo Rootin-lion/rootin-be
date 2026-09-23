@@ -23,10 +23,10 @@ public record InterviewReportResponseDto(
 ) {
     public static InterviewReportResponseDto generating(InterviewReport report) {
         return new InterviewReportResponseDto(
-                report.getInterviewId().getId(),
-                report.getInterviewId().getCategory(),
-                report.getInterviewId().getQuestionCount(),
-                report.getInterviewId().getCompletedAt(),
+                report.getInterview().getId(),
+                report.getInterview().getCategory(),
+                report.getInterview().getQuestionCount(),
+                report.getInterview().getCompletedAt(),
                 report.getStatus(),
                 null,
                 null,
@@ -49,10 +49,10 @@ public record InterviewReportResponseDto(
                         .toList();
 
         return new InterviewReportResponseDto(
-                report.getInterviewId().getId(),
-                report.getInterviewId().getCategory(),
-                report.getInterviewId().getQuestionCount(),
-                report.getInterviewId().getCompletedAt(),
+                report.getInterview().getId(),
+                report.getInterview().getCategory(),
+                report.getInterview().getQuestionCount(),
+                report.getInterview().getCompletedAt(),
                 report.getStatus(),
                 report.getAverageAccuracy(),
                 report.getOverallFeedback(),

@@ -6,9 +6,14 @@ import java.util.List;
 
 public record PageResponse<T>(
         List<T> content,
-        int totalPages
+        int totalPages,
+        long totalElements
 ) {
     public static <T> PageResponse<T> of(Page<T> page) {
-        return new PageResponse<>(page.getContent(), page.getTotalPages());
+        return new PageResponse<>(
+                page.getContent(),
+                page.getTotalPages(),
+                page.getTotalElements()
+        );
     }
 }

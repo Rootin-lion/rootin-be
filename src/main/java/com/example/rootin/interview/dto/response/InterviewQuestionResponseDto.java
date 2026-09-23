@@ -14,8 +14,8 @@ public record InterviewQuestionResponseDto (
     public static InterviewQuestionResponseDto from(InterviewQuestion question) {
         return new InterviewQuestionResponseDto(
                 question.getId(),
-                question.getTopicId().getId(),
-                question.getTopicId().getTopicName(),
+                question.getTopic().getId(),
+                question.getTopic().getTopicName(),
                 question.getQuestionOrder(),
                 question.getQuestionType(),
                 question.getQuestion()

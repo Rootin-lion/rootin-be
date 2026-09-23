@@ -14,7 +14,7 @@ public class InterviewEvaluation {
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "answer_id", nullable = false)
-    private InterviewAnswer answerId;
+    private InterviewAnswer answer;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "answer_level", nullable = false)
@@ -31,12 +31,12 @@ public class InterviewEvaluation {
     @Column(name = "missing_keywords", columnDefinition = "TEXT")
     private String missingKeywords;
 
-    public static InterviewEvaluation create(InterviewAnswer answerId, AnswerLevel answerLevel, int accuracy,
+    public static InterviewEvaluation create(InterviewAnswer answer, AnswerLevel answerLevel, int accuracy,
                                              String feedback, String matchedKeywords, String missingKeywords) {
 
         InterviewEvaluation evaluation = new InterviewEvaluation();
 
-        evaluation.answerId = answerId;
+        evaluation.answer = answer;
         evaluation.answerLevel = answerLevel;
         evaluation.accuracy = accuracy;
         evaluation.feedback = feedback;
