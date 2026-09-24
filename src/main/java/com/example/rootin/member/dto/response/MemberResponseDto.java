@@ -24,6 +24,7 @@ public class MemberResponseDto {
     private Long point;
     private Integer streakDays;
     private MemberRole role;
+    private boolean profileCompleted;
 
     public static MemberResponseDto from(Member member) {
         return new MemberResponseDto(
@@ -36,7 +37,8 @@ public class MemberResponseDto {
                 List.copyOf(member.getInterestFields()),
                 member.getPoint(),
                 member.getStreakDays(),
-                member.getRole()
+                member.getRole(),
+                member.isProfileCompleted()
         );
     }
 }
