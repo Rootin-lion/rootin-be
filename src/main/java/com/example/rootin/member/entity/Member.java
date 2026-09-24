@@ -62,6 +62,8 @@ public class Member {
     @Column(nullable = false, length = 20)
     private MemberRole role;
 
+    @Column(name = "profile_completed", nullable = false)
+    private boolean profileCompleted;
 
     private Member(
             String provider,
@@ -75,6 +77,7 @@ public class Member {
         this.imgUrl = imgUrl;
         this.createdAt = LocalDateTime.now();
         this.role = MemberRole.ROLE_MEMBER;
+        this.profileCompleted = false;
     }
 
     public static Member createKakaoMember(
@@ -122,12 +125,9 @@ public class Member {
     ) {
         this.nickname = nickname;
         this.ageGroup = ageGroup;
-
         this.interestFields.clear();
-
-        if (interestFields != null) {
-            this.interestFields.addAll(interestFields);
-        }
+        if (interestFields != null) {this.interestFields.addAll(interestFields);}
+        this.profileCompleted = true;
     }
 
 }
