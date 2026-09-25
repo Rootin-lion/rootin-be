@@ -154,6 +154,7 @@ public class CompetitionService {
 
         return new CompetitionProblemDetailResponse(
                 competitionProblem.getId(),
+                problem.getId(),
                 competitionProblem.getProblemOrder(),
                 problem.getTitle(),
                 problem.getContent(),

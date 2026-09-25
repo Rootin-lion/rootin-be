@@ -5,7 +5,8 @@ import com.example.rootin.member.domain.InterestField;
 import java.util.List;
 
 public record CompetitionProblemDetailResponse(
-        Long problemId,
+        Long problemId,          // 대회 문제 id (답안 제출, 해설 조회에 사용)
+        Long bankProblemId,      // 문제 은행 id
         Integer problemOrder,
         String problemTitle,
         String problemContent,

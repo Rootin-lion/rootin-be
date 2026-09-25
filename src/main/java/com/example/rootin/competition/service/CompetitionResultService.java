@@ -147,6 +147,7 @@ public class CompetitionResultService {
 
         return new CompetitionProblemSolutionResponse(
                 competitionProblem.getId(),
+                problem.getId(),
                 competitionProblem.getProblemOrder(),
                 problem.getTitle(),
                 problem.getContent(),
