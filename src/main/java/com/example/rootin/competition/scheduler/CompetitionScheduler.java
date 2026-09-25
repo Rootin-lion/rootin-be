@@ -15,7 +15,7 @@ public class CompetitionScheduler {
 
     private final CompetitionRepository competitionRepository;
 
-    @Scheduled(cron = "0 0 0 * * *") // 매일 자정
+    @Scheduled(cron = "0 0 0 * * *", zone = "Asia/Seoul")  // 매일 자정
     public void createDailyCompetition() {
         LocalDate today = LocalDate.now();
         LocalDateTime start = today.atTime(12, 0);
