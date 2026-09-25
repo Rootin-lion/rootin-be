@@ -20,4 +20,7 @@ public interface CompetitionRepository extends JpaRepository<Competition, Long> 
 
     // 주간/월간 랭킹 - 해당 기간(주/달)에 열린 대회 전체 조회
     List<Competition> findByCompetitionDateBetween(LocalDate start, LocalDate end);
+
+    // 스케줄러 - 해당 날짜 대회가 이미 있는지 확인 (중복 생성 방지)
+    boolean existsByCompetitionDate(LocalDate competitionDate);
 }
