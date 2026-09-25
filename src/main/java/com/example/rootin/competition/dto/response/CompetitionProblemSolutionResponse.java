@@ -7,6 +7,7 @@ import java.util.List;
 public record CompetitionProblemSolutionResponse(
         Long problemId,
         int problemOrder,
+        String problemTitle,
         String problemContent,
         InterestField category,
         String problemExplanation,

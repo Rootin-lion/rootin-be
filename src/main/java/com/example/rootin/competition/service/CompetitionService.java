@@ -26,7 +26,7 @@ public class CompetitionService {
     private final CompetitionRepository competitionRepository;
     private final CompetitionParticipantRepository competitionParticipantRepository;
     private final CompetitionProblemRepository competitionProblemRepository;
-    private final CompetitionProblemOptionRepository competitionProblemOptionRepository;
+    private final ProblemOptionRepository problemOptionRepository;
     private final CompetitionProblemSubmissionRepository competitionProblemSubmissionRepository;
 
     @Transactional(readOnly = true)
@@ -143,17 +143,20 @@ public class CompetitionService {
         return buildProblemDetailResponse(problem);
     }
 
-    private CompetitionProblemDetailResponse buildProblemDetailResponse(CompetitionProblem problem) {
+    private CompetitionProblemDetailResponse buildProblemDetailResponse(CompetitionProblem competitionProblem){
+        Problem problem = competitionProblem.getProblem();
+
         List<CompetitionProblemDetailResponse.OptionResponse> options =
-                competitionProblemOptionRepository.findByCompetitionProblemOrderByOptionOrderAsc(problem).stream()
+                problemOptionRepository.findByProblemOrderByOptionOrderAsc(problem).stream()
                         .map(option -> new CompetitionProblemDetailResponse.OptionResponse(
                                 option.getId(), option.getOptionContent(), option.getOptionOrder()))
                         .toList();
 
         return new CompetitionProblemDetailResponse(
-                problem.getId(),
-                problem.getProblemOrder(),
-                problem.getProblemContent(),
+                competitionProblem.getId(),
+                competitionProblem.getProblemOrder(),
+                problem.getTitle(),
+                problem.getContent(),
                 problem.getCategory(),
                 options
         );
@@ -208,8 +211,8 @@ public class CompetitionService {
         CompetitionProblem problem = competitionProblemRepository.findByIdAndCompetition(request.problemId(), competition)
                 .orElseThrow(CompetitionProblemNotFoundException::new);
 
-        CompetitionProblemOption option = competitionProblemOptionRepository
-                .findByIdAndCompetitionProblem(request.selectedOptionId(), problem)
+        ProblemOption option = problemOptionRepository
+                .findByIdAndProblem(request.selectedOptionId(), problem.getProblem())
                 .orElseThrow(CompetitionOptionNotFoundException::new);
 
         competitionProblemSubmissionRepository.findByCompetitionParticipantAndCompetitionProblem(participant, problem)
