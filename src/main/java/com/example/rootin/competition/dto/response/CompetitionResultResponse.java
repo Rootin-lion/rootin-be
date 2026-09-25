@@ -19,7 +19,7 @@ public record CompetitionResultResponse(
 ) {
     public record ProblemResultResponse(
             int problemOrder,
-            Long problemId,
+            Long competitionProblemId,
             ProblemResultStatus status,
             int score
     ) {}

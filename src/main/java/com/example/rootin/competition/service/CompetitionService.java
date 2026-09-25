@@ -133,11 +133,11 @@ public class CompetitionService {
     }
 
     @Transactional(readOnly = true)
-    public CompetitionProblemDetailResponse getProblemDetail(Long competitionId, Long problemId) {
+    public CompetitionProblemDetailResponse getProblemDetail(Long competitionId, Long competitionProblemId) {
         Competition competition = competitionRepository.findById(competitionId)
                 .orElseThrow(CompetitionNotFoundException::new);
 
-        CompetitionProblem problem = competitionProblemRepository.findByIdAndCompetition(problemId, competition)
+        CompetitionProblem problem = competitionProblemRepository.findByIdAndCompetition(competitionProblemId, competition)
                 .orElseThrow(CompetitionProblemNotFoundException::new);
 
         return buildProblemDetailResponse(problem);
@@ -209,7 +209,7 @@ public class CompetitionService {
             throw new CompetitionTimeExpiredException();
         }
 
-        CompetitionProblem problem = competitionProblemRepository.findByIdAndCompetition(request.problemId(), competition)
+        CompetitionProblem problem = competitionProblemRepository.findByIdAndCompetition(request.competitionProblemId(), competition)
                 .orElseThrow(CompetitionProblemNotFoundException::new);
 
         ProblemOption option = problemOptionRepository

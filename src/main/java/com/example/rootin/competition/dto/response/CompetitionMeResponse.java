@@ -11,7 +11,7 @@ public record CompetitionMeResponse(
         List<AnsweredProblemResponse> answeredProblems
 ) {
     public record AnsweredProblemResponse(
-            Long problemId,
+            Long competitionProblemId,
             Long selectedOptionId
     ) {}
 }

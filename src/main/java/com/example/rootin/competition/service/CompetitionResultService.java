@@ -48,7 +48,7 @@ public class CompetitionResultService {
 
         List<CompetitionProblem> problems = competitionProblemRepository.findByCompetitionOrderByProblemOrderAsc(competition);
 
-        Map<Long, CompetitionProblemSubmission> submissionByProblemId =
+        Map<Long, CompetitionProblemSubmission> submissionByCompetitionProblemId =
                 competitionProblemSubmissionRepository.findByCompetitionParticipant(participant).stream()
                         .collect(Collectors.toMap(
                                 submission -> submission.getCompetitionProblem().getId(),
@@ -60,7 +60,7 @@ public class CompetitionResultService {
 
         List<CompetitionResultResponse.ProblemResultResponse> problemResults = problems.stream()
                 .map(competitionProblem-> {
-                    CompetitionProblemSubmission submission = submissionByProblemId.get(competitionProblem.getId());
+                    CompetitionProblemSubmission submission = submissionByCompetitionProblemId.get(competitionProblem.getId());
                     ProblemResultStatus status = submission == null
                             ? ProblemResultStatus.UNANSWERED
                             : submission.isCorrect() ? ProblemResultStatus.CORRECT : ProblemResultStatus.WRONG;
@@ -115,7 +115,7 @@ public class CompetitionResultService {
     }
 
     @Transactional(readOnly = true)
-    public CompetitionProblemSolutionResponse getSolution(Long competitionId, Long problemId, Long memberId) {
+    public CompetitionProblemSolutionResponse getSolution(Long competitionId, Long competitionProblemId, Long memberId) {
         Competition competition = competitionRepository.findById(competitionId)
                 .orElseThrow(CompetitionNotFoundException::new);
 
@@ -127,7 +127,7 @@ public class CompetitionResultService {
             throw new CompetitionNotSubmittedException();
         }
 
-        CompetitionProblem competitionProblem = competitionProblemRepository.findByIdAndCompetition(problemId, competition)
+        CompetitionProblem competitionProblem = competitionProblemRepository.findByIdAndCompetition(competitionProblemId, competition)
                 .orElseThrow(CompetitionProblemNotFoundException::new);
 
         Problem problem = competitionProblem.getProblem();

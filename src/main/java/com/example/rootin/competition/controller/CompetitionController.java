@@ -58,12 +58,12 @@ public class CompetitionController {
     }
 
     @Operation(summary = "문제 상세 조회")
-    @GetMapping("/{competitionId}/problems/{problemId}")
+    @GetMapping("/{competitionId}/problems/{competitionProblemId}")
     public ApiResponse<CompetitionProblemDetailResponse> getProblemDetail(
             @PathVariable Long competitionId,
-            @PathVariable Long problemId
+            @PathVariable Long competitionProblemId
     ) {
-        return ApiResponse.success(competitionService.getProblemDetail(competitionId, problemId));
+        return ApiResponse.success(competitionService.getProblemDetail(competitionId, competitionProblemId));
     }
 
     @Operation(summary = "대회 진행 정보 조회")
@@ -105,12 +105,12 @@ public class CompetitionController {
     }
 
     @Operation(summary = "문제별 결과 상세 조회")
-    @GetMapping("/{competitionId}/problems/{problemId}/solution")
+    @GetMapping("/{competitionId}/problems/{competitionProblemId}/solution")
     public ApiResponse<CompetitionProblemSolutionResponse> getSolution(
             @PathVariable Long competitionId,
-            @PathVariable Long problemId,
+            @PathVariable Long competitionProblemId,
             @AuthenticationPrincipal Long memberId
     ) {
-        return ApiResponse.success(competitionResultService.getSolution(competitionId, problemId, memberId));
+        return ApiResponse.success(competitionResultService.getSolution(competitionId, competitionProblemId, memberId));
     }
 }
