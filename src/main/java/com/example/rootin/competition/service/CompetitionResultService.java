@@ -31,7 +31,7 @@ public class CompetitionResultService {
     private final CompetitionParticipantRepository competitionParticipantRepository;
     private final CompetitionProblemRepository competitionProblemRepository;
     private final CompetitionProblemSubmissionRepository competitionProblemSubmissionRepository;
-    private final CompetitionProblemOptionRepository competitionProblemOptionRepository;
+    private final ProblemOptionRepository problemOptionRepository;
 
     @Transactional(readOnly = true)
     public CompetitionResultResponse getResult(Long competitionId, Long memberId) {
@@ -48,7 +48,7 @@ public class CompetitionResultService {
 
         List<CompetitionProblem> problems = competitionProblemRepository.findByCompetitionOrderByProblemOrderAsc(competition);
 
-        Map<Long, CompetitionProblemSubmission> submissionByProblemId =
+        Map<Long, CompetitionProblemSubmission> submissionByCompetitionProblemId =
                 competitionProblemSubmissionRepository.findByCompetitionParticipant(participant).stream()
                         .collect(Collectors.toMap(
                                 submission -> submission.getCompetitionProblem().getId(),
@@ -59,21 +59,21 @@ public class CompetitionResultService {
         Map<InterestField, int[]> categoryStats = new EnumMap<>(InterestField.class);
 
         List<CompetitionResultResponse.ProblemResultResponse> problemResults = problems.stream()
-                .map(problem -> {
-                    CompetitionProblemSubmission submission = submissionByProblemId.get(problem.getId());
+                .map(competitionProblem-> {
+                    CompetitionProblemSubmission submission = submissionByCompetitionProblemId.get(competitionProblem.getId());
                     ProblemResultStatus status = submission == null
                             ? ProblemResultStatus.UNANSWERED
                             : submission.isCorrect() ? ProblemResultStatus.CORRECT : ProblemResultStatus.WRONG;
 
-                    int[] stats = categoryStats.computeIfAbsent(problem.getCategory(), c -> new int[2]);
+                    int[] stats = categoryStats.computeIfAbsent(competitionProblem.getProblem().getCategory(), c -> new int[2]);
                     stats[1]++; // 해당 카테고리 전체 문제 개수
                     if (status == ProblemResultStatus.CORRECT) {
                         stats[0]++; // 해당 카테고리 정답 개수
                     }
 
                     return new CompetitionResultResponse.ProblemResultResponse(
-                            problem.getProblemOrder(),
-                            problem.getId(),
+                            competitionProblem.getProblemOrder(),
+                            competitionProblem.getId(),
                             status,
                             status == ProblemResultStatus.CORRECT ? 10 : 0
                     );
@@ -115,7 +115,7 @@ public class CompetitionResultService {
     }
 
     @Transactional(readOnly = true)
-    public CompetitionProblemSolutionResponse getSolution(Long competitionId, Long problemId, Long memberId) {
+    public CompetitionProblemSolutionResponse getSolution(Long competitionId, Long competitionProblemId, Long memberId) {
         Competition competition = competitionRepository.findById(competitionId)
                 .orElseThrow(CompetitionNotFoundException::new);
 
@@ -127,28 +127,32 @@ public class CompetitionResultService {
             throw new CompetitionNotSubmittedException();
         }
 
-        CompetitionProblem problem = competitionProblemRepository.findByIdAndCompetition(problemId, competition)
+        CompetitionProblem competitionProblem = competitionProblemRepository.findByIdAndCompetition(competitionProblemId, competition)
                 .orElseThrow(CompetitionProblemNotFoundException::new);
 
+        Problem problem = competitionProblem.getProblem();
+
         List<CompetitionProblemSolutionResponse.OptionResponse> options =
-                competitionProblemOptionRepository.findByCompetitionProblemOrderByOptionOrderAsc(problem).stream()
+                problemOptionRepository.findByProblemOrderByOptionOrderAsc(problem).stream()
                         .map(option -> new CompetitionProblemSolutionResponse.OptionResponse(
                                 option.getId(), option.getOptionContent(), option.getOptionOrder(), option.isAnswer()))
                         .toList();
 
         // 안 풀고 넘어간 문제일 수 있음 -> 제출 기록은 Optional로 처리
         Optional<CompetitionProblemSubmission> submission =
-                competitionProblemSubmissionRepository.findByCompetitionParticipantAndCompetitionProblem(participant, problem);
+                competitionProblemSubmissionRepository.findByCompetitionParticipantAndCompetitionProblem(participant, competitionProblem);
 
         Long selectedOptionId = submission.map(s -> s.getSelectedOption().getId()).orElse(null);
         boolean correct = submission.map(CompetitionProblemSubmission::isCorrect).orElse(false);
 
         return new CompetitionProblemSolutionResponse(
+                competitionProblem.getId(),
                 problem.getId(),
-                problem.getProblemOrder(),
-                problem.getProblemContent(),
+                competitionProblem.getProblemOrder(),
+                problem.getTitle(),
+                problem.getContent(),
                 problem.getCategory(),
-                problem.getProblemExplanation(),
+                problem.getExplanation(),
                 options,
                 selectedOptionId,
                 correct

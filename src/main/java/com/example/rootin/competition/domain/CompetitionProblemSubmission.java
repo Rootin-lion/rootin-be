@@ -19,7 +19,7 @@ public class CompetitionProblemSubmission {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "selected_option_id", nullable = false)
-    private CompetitionProblemOption selectedOption;
+    private ProblemOption selectedOption;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "competition_participant_id", nullable = false)
@@ -33,7 +33,7 @@ public class CompetitionProblemSubmission {
     private boolean isCorrect = false;
 
     public CompetitionProblemSubmission(
-            CompetitionProblemOption selectedOption,
+            ProblemOption selectedOption,
             CompetitionParticipant competitionParticipant,
             CompetitionProblem competitionProblem,
             boolean isCorrect
@@ -45,7 +45,7 @@ public class CompetitionProblemSubmission {
     }
 
     // 답안 변경 - 최종 제출 전까지만 호출 가능
-    public void changeAnswer(CompetitionProblemOption selectedOption, boolean isCorrect) {
+    public void changeAnswer(ProblemOption selectedOption, boolean isCorrect) {
         this.selectedOption = selectedOption;
         this.isCorrect = isCorrect;
     }
