@@ -8,6 +8,7 @@ public record DashboardResponseDto(
         long points,
         int streakDays,
         List<DailyActivityResponseDto> dailyActivities,
-        List<CategoryAccuracyResponseDto> categoryAccuracies
+        List<CategoryAccuracyResponseDto> categoryAccuracies,
+        List<BookmarkResponseDto> bookmarks
 ) {
 }

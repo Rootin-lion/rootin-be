@@ -1,5 +1,7 @@
 package com.example.rootin.mypage.dashboard.service;
 
+import com.example.rootin.bookmark.domain.CompetitionProblemBookmark;
+import com.example.rootin.bookmark.repository.CompetitionProblemBookmarkRepository;
 import com.example.rootin.competition.domain.CompetitionParticipant;
 import com.example.rootin.competition.domain.CompetitionProblemSubmission;
 import com.example.rootin.competition.repository.CompetitionParticipantRepository;
@@ -13,9 +15,11 @@ import com.example.rootin.member.domain.InterestField;
 import com.example.rootin.member.entity.Member;
 import com.example.rootin.member.repository.MemberRepository;
 import com.example.rootin.mypage.dashboard.dto.response.CategoryAccuracyResponseDto;
+import com.example.rootin.mypage.dashboard.dto.response.BookmarkResponseDto;
 import com.example.rootin.mypage.dashboard.dto.response.DailyActivityResponseDto;
 import com.example.rootin.mypage.dashboard.dto.response.DashboardResponseDto;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,8 +37,11 @@ import java.util.Set;
 @Transactional(readOnly = true)
 public class DashboardService {
 
+    private static final int RECENT_PROBLEM_LIMIT = 3; // 대시보드에 보여줄 문항 수
+
     private final CompetitionParticipantRepository competitionParticipantRepository;
     private final CompetitionProblemSubmissionRepository competitionProblemSubmissionRepository;
+    private final CompetitionProblemBookmarkRepository competitionProblemBookmarkRepository;
     private final InterviewRepository interviewRepository;
     private final MemberRepository memberRepository;
 
@@ -59,8 +66,22 @@ public class DashboardService {
                 member.getPoint(),
                 calculateStreakDays(completedCompetitions),
                 createDailyActivities(completedCompetitions, completedInterviews),
-                createCategoryAccuracies(submissions)
+                createCategoryAccuracies(submissions),
+                getRecentBookmarks(memberId)
         );
+    }
+
+    private List<BookmarkResponseDto> getRecentBookmarks(Long memberId) {
+        return competitionProblemBookmarkRepository
+                .findRecentByMemberId(memberId, PageRequest.of(0, RECENT_PROBLEM_LIMIT))
+                .stream()
+                .map(CompetitionProblemBookmark::getProblem)
+                .map(problem -> new BookmarkResponseDto(
+                        problem.getId(),
+                        problem.getCategory(),
+                        problem.getTitle()
+                ))
+                .toList();
     }
 
     private int calculateStreakDays(List<CompetitionParticipant> completedCompetitions ) {
@@ -126,7 +147,7 @@ public class DashboardService {
         }
 
         for (CompetitionProblemSubmission submission : submissions) {
-            InterestField category = submission.getCompetitionProblem().getCategory();
+            InterestField category = submission.getCompetitionProblem().getProblem().getCategory();
             accuracyCounts.get(category).add(submission.isCorrect());
         }
 

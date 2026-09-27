@@ -19,7 +19,7 @@ public class MypageReportController {
     private final MypageReportService mypageReportService;
 
     @GetMapping("/reports")
-    @Operation(summary = "마이페이지 면접 리포트 조회", description = "닉네임, 연령대, 관심분야 설정")
+    @Operation(summary = "마이페이지 면접 리포트 조회")
     public ApiResponse<PageResponse<MypageReportResponseDto>> getReports(
             @AuthenticationPrincipal Long memberId,
             @RequestParam(defaultValue = "1") int page
