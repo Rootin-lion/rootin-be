@@ -19,24 +19,16 @@ public class CompetitionProblem {
     @JoinColumn(name = "competition_id", nullable = false)
     private Competition competition;
 
-    @Column(name = "problem_content", nullable = false, length = 200)
-    private String problemContent;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "problem_id", nullable = false)
+    private Problem problem;
 
     @Column(name = "problem_order", nullable = false)
     private Integer problemOrder;
 
-    @Column(name = "problem_explanation", nullable = false, length = 300)
-    private String problemExplanation;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "category", nullable = false, length = 20)
-    private InterestField category;
-
-    public CompetitionProblem(Competition competition, String problemContent, Integer problemOrder, String problemExplanation, InterestField category) {
+    public CompetitionProblem(Competition competition, Problem problem, Integer problemOrder) {
         this.competition = competition;
-        this.problemContent = problemContent;
+        this.problem = problem;
         this.problemOrder = problemOrder;
-        this.problemExplanation = problemExplanation;
-        this.category = category;
     }
 }

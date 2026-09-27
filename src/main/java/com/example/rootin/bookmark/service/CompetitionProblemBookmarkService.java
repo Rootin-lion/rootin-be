@@ -5,8 +5,10 @@ import com.example.rootin.bookmark.exception.ProblemBookmarkAlreadyExistsExcepti
 import com.example.rootin.bookmark.exception.ProblemBookmarkNotFoundException;
 import com.example.rootin.bookmark.repository.CompetitionProblemBookmarkRepository;
 import com.example.rootin.competition.domain.CompetitionProblem;
+import com.example.rootin.competition.domain.Problem;
 import com.example.rootin.competition.exception.CompetitionProblemNotFoundException;
 import com.example.rootin.competition.repository.CompetitionProblemRepository;
+import com.example.rootin.competition.repository.ProblemRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,15 +19,15 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 public class CompetitionProblemBookmarkService {
 
-    private final CompetitionProblemRepository competitionProblemRepository;
+    private final ProblemRepository problemRepository;
     private final CompetitionProblemBookmarkRepository competitionProblemBookmarkRepository;
 
     @Transactional
     public void addBookmark(Long problemId, Long memberId) {
-        CompetitionProblem problem = competitionProblemRepository.findById(problemId)
+        Problem problem = problemRepository.findById(problemId)
                 .orElseThrow(CompetitionProblemNotFoundException::new);
 
-        if (competitionProblemBookmarkRepository.findByMemberIdAndCompetitionProblem(memberId, problem).isPresent()) {
+        if (competitionProblemBookmarkRepository.findByMemberIdAndProblem(memberId, problem).isPresent()) {
             throw new ProblemBookmarkAlreadyExistsException();
         }
 
@@ -35,11 +37,11 @@ public class CompetitionProblemBookmarkService {
 
     @Transactional
     public void removeBookmark(Long problemId, Long memberId) {
-        CompetitionProblem problem = competitionProblemRepository.findById(problemId)
+        Problem problem = problemRepository.findById(problemId)
                 .orElseThrow(CompetitionProblemNotFoundException::new);
 
         CompetitionProblemBookmark bookmark = competitionProblemBookmarkRepository
-                .findByMemberIdAndCompetitionProblem(memberId, problem)
+                .findByMemberIdAndProblem(memberId, problem)
                 .orElseThrow(ProblemBookmarkNotFoundException::new);
 
         competitionProblemBookmarkRepository.delete(bookmark);

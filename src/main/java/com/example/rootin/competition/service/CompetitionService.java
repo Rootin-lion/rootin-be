@@ -26,7 +26,7 @@ public class CompetitionService {
     private final CompetitionRepository competitionRepository;
     private final CompetitionParticipantRepository competitionParticipantRepository;
     private final CompetitionProblemRepository competitionProblemRepository;
-    private final CompetitionProblemOptionRepository competitionProblemOptionRepository;
+    private final ProblemOptionRepository problemOptionRepository;
     private final CompetitionProblemSubmissionRepository competitionProblemSubmissionRepository;
 
     @Transactional(readOnly = true)
@@ -133,27 +133,31 @@ public class CompetitionService {
     }
 
     @Transactional(readOnly = true)
-    public CompetitionProblemDetailResponse getProblemDetail(Long competitionId, Long problemId) {
+    public CompetitionProblemDetailResponse getProblemDetail(Long competitionId, Long competitionProblemId) {
         Competition competition = competitionRepository.findById(competitionId)
                 .orElseThrow(CompetitionNotFoundException::new);
 
-        CompetitionProblem problem = competitionProblemRepository.findByIdAndCompetition(problemId, competition)
+        CompetitionProblem problem = competitionProblemRepository.findByIdAndCompetition(competitionProblemId, competition)
                 .orElseThrow(CompetitionProblemNotFoundException::new);
 
         return buildProblemDetailResponse(problem);
     }
 
-    private CompetitionProblemDetailResponse buildProblemDetailResponse(CompetitionProblem problem) {
+    private CompetitionProblemDetailResponse buildProblemDetailResponse(CompetitionProblem competitionProblem){
+        Problem problem = competitionProblem.getProblem();
+
         List<CompetitionProblemDetailResponse.OptionResponse> options =
-                competitionProblemOptionRepository.findByCompetitionProblemOrderByOptionOrderAsc(problem).stream()
+                problemOptionRepository.findByProblemOrderByOptionOrderAsc(problem).stream()
                         .map(option -> new CompetitionProblemDetailResponse.OptionResponse(
                                 option.getId(), option.getOptionContent(), option.getOptionOrder()))
                         .toList();
 
         return new CompetitionProblemDetailResponse(
+                competitionProblem.getId(),
                 problem.getId(),
-                problem.getProblemOrder(),
-                problem.getProblemContent(),
+                competitionProblem.getProblemOrder(),
+                problem.getTitle(),
+                problem.getContent(),
                 problem.getCategory(),
                 options
         );
@@ -205,11 +209,11 @@ public class CompetitionService {
             throw new CompetitionTimeExpiredException();
         }
 
-        CompetitionProblem problem = competitionProblemRepository.findByIdAndCompetition(request.problemId(), competition)
+        CompetitionProblem problem = competitionProblemRepository.findByIdAndCompetition(request.competitionProblemId(), competition)
                 .orElseThrow(CompetitionProblemNotFoundException::new);
 
-        CompetitionProblemOption option = competitionProblemOptionRepository
-                .findByIdAndCompetitionProblem(request.selectedOptionId(), problem)
+        ProblemOption option = problemOptionRepository
+                .findByIdAndProblem(request.selectedOptionId(), problem.getProblem())
                 .orElseThrow(CompetitionOptionNotFoundException::new);
 
         competitionProblemSubmissionRepository.findByCompetitionParticipantAndCompetitionProblem(participant, problem)

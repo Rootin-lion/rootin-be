@@ -5,18 +5,18 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "competition_problem_option")
+@Table(name = "problem_option")
 @Getter
 @NoArgsConstructor
-public class CompetitionProblemOption {
+public class ProblemOption {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "competition_problem_id", nullable = false)
-    private CompetitionProblem competitionProblem;
+    @JoinColumn(name = "problem_id", nullable = false)
+    private Problem problem;
 
     @Column(name = "option_content", nullable = false, length = 255)
     private String optionContent;
@@ -27,8 +27,8 @@ public class CompetitionProblemOption {
     @Column(name = "is_answer", nullable = false)
     private boolean isAnswer = false;
 
-    public CompetitionProblemOption(CompetitionProblem competitionProblem, String optionContent, Integer optionOrder, boolean isAnswer) {
-        this.competitionProblem = competitionProblem;
+    public ProblemOption(Problem problem, String optionContent, Integer optionOrder, boolean isAnswer) {
+        this.problem = problem;
         this.optionContent = optionContent;
         this.optionOrder = optionOrder;
         this.isAnswer = isAnswer;
