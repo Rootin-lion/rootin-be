@@ -43,13 +43,16 @@ public class CompetitionService {
             case CLOSED -> 0;
         };
 
+        long participantCount = competitionParticipantRepository.countByCompetition(competition);
+
         return new CompetitionTodayResponse(
                 competition.getId(),
                 competition.getCompetitionDate(),
                 competition.getStartAt(),
                 competition.getEndAt(),
                 status,
-                remainingSeconds
+                remainingSeconds,
+                participantCount
         );
     }
 
