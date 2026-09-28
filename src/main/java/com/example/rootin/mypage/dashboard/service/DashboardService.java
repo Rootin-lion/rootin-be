@@ -143,10 +143,9 @@ public class DashboardService {
 
         return activityCounts.entrySet().stream()
                 .sorted(Map.Entry.comparingByKey()) //날짜 오름차순 정렬
-                .map(entry -> DailyActivityResponseDto.of(
+                .map(entry -> new DailyActivityResponseDto(
                         entry.getKey(),
-                        entry.getValue().competitionCount,
-                        entry.getValue().interviewCount
+                        entry.getValue().competitionCount + entry.getValue().interviewCount
                 ))
                 .toList();
     }
@@ -171,8 +170,6 @@ public class DashboardService {
                     AccuracyCount count = accuracyCounts.get(category);
                     return new CategoryAccuracyResponseDto(
                             category,
-                            count.solvedCount,
-                            count.correctCount,
                             calculateRate(count.correctCount, count.solvedCount)
                     );
                 })
