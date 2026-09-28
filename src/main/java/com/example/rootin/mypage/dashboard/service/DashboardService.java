@@ -14,10 +14,7 @@ import com.example.rootin.global.exception.ErrorCode;
 import com.example.rootin.member.domain.InterestField;
 import com.example.rootin.member.entity.Member;
 import com.example.rootin.member.repository.MemberRepository;
-import com.example.rootin.mypage.dashboard.dto.response.CategoryAccuracyResponseDto;
-import com.example.rootin.mypage.dashboard.dto.response.BookmarkResponseDto;
-import com.example.rootin.mypage.dashboard.dto.response.DailyActivityResponseDto;
-import com.example.rootin.mypage.dashboard.dto.response.DashboardResponseDto;
+import com.example.rootin.mypage.dashboard.dto.response.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -67,7 +64,8 @@ public class DashboardService {
                 calculateStreakDays(completedCompetitions),
                 createDailyActivities(completedCompetitions, completedInterviews),
                 createCategoryAccuracies(submissions),
-                getRecentBookmarks(memberId)
+                getRecentBookmarks(memberId),
+                getRecentWrongAnswers(memberId)
         );
     }
 
@@ -81,6 +79,23 @@ public class DashboardService {
                         problem.getCategory(),
                         problem.getTitle()
                 ))
+                .toList();
+    }
+
+    private List<WrongAnswerResponseDto> getRecentWrongAnswers(Long memberId) {
+        return competitionProblemSubmissionRepository
+                .findRecentWrongSubmissionsByMemberId(memberId, PageRequest.of(0, RECENT_PROBLEM_LIMIT))
+                .stream()
+                .map(submission -> {
+                    var competitionProblem = submission.getCompetitionProblem();
+                    var problem = competitionProblem.getProblem();
+                    return new WrongAnswerResponseDto(
+                            competitionProblem.getCompetition().getId(),
+                            competitionProblem.getId(),
+                            problem.getCategory(),
+                            problem.getTitle()
+                    );
+                })
                 .toList();
     }
 

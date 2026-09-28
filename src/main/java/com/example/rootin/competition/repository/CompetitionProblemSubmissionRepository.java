@@ -3,6 +3,7 @@ package com.example.rootin.competition.repository;
 import com.example.rootin.competition.domain.CompetitionParticipant;
 import com.example.rootin.competition.domain.CompetitionProblem;
 import com.example.rootin.competition.domain.CompetitionProblemSubmission;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -35,6 +36,24 @@ public interface CompetitionProblemSubmissionRepository extends JpaRepository<Co
             """)
     List<CompetitionProblemSubmission> findCompletedSubmissionsByMemberId(
             @Param("memberId") Long memberId
+    );
+
+    // 마이페이지 - 틀린 문제를 최신순으로 조회
+    @Query("""
+            SELECT submission
+            FROM CompetitionProblemSubmission submission
+            JOIN FETCH submission.competitionProblem competitionProblem
+            JOIN FETCH competitionProblem.problem
+            JOIN FETCH competitionProblem.competition
+            JOIN submission.competitionParticipant participant
+            WHERE participant.memberId = :memberId
+              AND participant.submittedAt IS NOT NULL
+              AND submission.isCorrect = false
+            ORDER BY participant.submittedAt DESC, submission.id DESC
+            """)
+    List<CompetitionProblemSubmission> findRecentWrongSubmissionsByMemberId(
+            @Param("memberId") Long memberId,
+            PageRequest pageable
     );
 }
 
