@@ -1,4 +1,4 @@
-package com.example.rootin.mypage.report.dto;
+package com.example.rootin.mypage.report.dto.response;
 
 
 import com.example.rootin.interview.domain.InterviewMode;
