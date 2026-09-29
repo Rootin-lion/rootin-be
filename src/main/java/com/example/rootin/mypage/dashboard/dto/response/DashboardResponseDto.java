@@ -4,7 +4,7 @@ import java.util.List;
 
 public record DashboardResponseDto(
         long totalSolvedCounts,
-        double accuracyRate,
+        int accuracyRate,
         long points,
         int streakDays,
         List<DailyActivityResponseDto> dailyActivities,

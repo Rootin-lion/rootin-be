@@ -4,6 +4,6 @@ import com.example.rootin.member.domain.InterestField;
 
 public record CategoryAccuracyResponseDto(
         InterestField category,
-        double accuracyRate
+        int accuracyRate
 ) {
 }

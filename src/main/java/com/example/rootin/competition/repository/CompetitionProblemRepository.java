@@ -17,4 +17,8 @@ public interface CompetitionProblemRepository extends JpaRepository<CompetitionP
     // 문제 상세 조회 - 문제 id + 해당 대회 소속인지까지 함께 검증 (N+1 방지를 위해 Problem 함께 조회)
     @EntityGraph(attributePaths = "problem")
     Optional<CompetitionProblem> findByIdAndCompetition(Long id, Competition competition);
+
+    // 마이페이지 - 여러 대회의 모든 문제를 조회 -> 분야별 집계 (N+1 방지를 위해 Problem 함께 조회)
+    @EntityGraph(attributePaths = "problem")
+    List<CompetitionProblem> findByCompetitionIn(List<Competition> competitions);
 }

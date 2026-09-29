@@ -30,6 +30,7 @@ public interface CompetitionProblemSubmissionRepository extends JpaRepository<Co
             SELECT submission
             FROM CompetitionProblemSubmission submission
             JOIN FETCH submission.competitionProblem problem
+            JOIN FETCH problem.problem
             JOIN submission.competitionParticipant participant
             WHERE participant.memberId = :memberId
               AND participant.submittedAt IS NOT NULL

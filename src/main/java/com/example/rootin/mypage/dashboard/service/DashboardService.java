@@ -3,8 +3,10 @@ package com.example.rootin.mypage.dashboard.service;
 import com.example.rootin.bookmark.domain.CompetitionProblemBookmark;
 import com.example.rootin.bookmark.repository.CompetitionProblemBookmarkRepository;
 import com.example.rootin.competition.domain.CompetitionParticipant;
+import com.example.rootin.competition.domain.CompetitionProblem;
 import com.example.rootin.competition.domain.CompetitionProblemSubmission;
 import com.example.rootin.competition.repository.CompetitionParticipantRepository;
+import com.example.rootin.competition.repository.CompetitionProblemRepository;
 import com.example.rootin.competition.repository.CompetitionProblemSubmissionRepository;
 import com.example.rootin.interview.domain.Interview;
 import com.example.rootin.interview.domain.InterviewStatus;
@@ -37,6 +39,7 @@ public class DashboardService {
     private static final int RECENT_PROBLEM_LIMIT = 3; // 대시보드에 보여줄 문항 수
 
     private final CompetitionParticipantRepository competitionParticipantRepository;
+    private final CompetitionProblemRepository competitionProblemRepository;
     private final CompetitionProblemSubmissionRepository competitionProblemSubmissionRepository;
     private final CompetitionProblemBookmarkRepository competitionProblemBookmarkRepository;
     private final InterviewRepository interviewRepository;
@@ -63,7 +66,7 @@ public class DashboardService {
                 member.getPoint(),
                 calculateStreakDays(completedCompetitions),
                 createDailyActivities(completedCompetitions, completedInterviews),
-                createCategoryAccuracies(submissions),
+                createCategoryAccuracies(completedCompetitions, submissions),
                 getRecentBookmarks(memberId),
                 getRecentWrongAnswers(memberId)
         );
@@ -151,7 +154,8 @@ public class DashboardService {
     }
 
     private List<CategoryAccuracyResponseDto> createCategoryAccuracies(
-            List<CompetitionProblemSubmission> submissions
+            List<CompetitionParticipant> completedCompetitions, //사용자가 최종 제출한 대회 목록
+            List<CompetitionProblemSubmission> submissions // 해당 대회에서 사용자가 실제로 답안을 선택한 문제 목록
     ) {
         Map<InterestField, AccuracyCount> accuracyCounts =
                 new EnumMap<>(InterestField.class);
@@ -160,9 +164,23 @@ public class DashboardService {
             accuracyCounts.put(category, new AccuracyCount());
         }
 
+        if (!completedCompetitions.isEmpty()) { // 완료한 대회에 출제된 모든 문제 조회
+            List<CompetitionProblem> competitionProblems = competitionProblemRepository.findByCompetitionIn(
+                    completedCompetitions.stream()
+                            .map(CompetitionParticipant::getCompetition)
+                            .toList()
+            );
+            for (CompetitionProblem competitionProblem : competitionProblems) { // 각 문제의 분야 확인 후 카운트 증가
+                InterestField category = competitionProblem.getProblem().getCategory();
+                accuracyCounts.get(category).increaseTotalCount();
+            }
+        }
+
         for (CompetitionProblemSubmission submission : submissions) {
-            InterestField category = submission.getCompetitionProblem().getProblem().getCategory();
-            accuracyCounts.get(category).add(submission.isCorrect());
+            if (submission.isCorrect()) {
+                InterestField category = submission.getCompetitionProblem().getProblem().getCategory();
+                accuracyCounts.get(category).increaseCorrectCount(); // 제출 답안 중 분야별 정답만 카운트 증가
+            }
         }
 
         return Arrays.stream(InterestField.values())
@@ -170,17 +188,17 @@ public class DashboardService {
                     AccuracyCount count = accuracyCounts.get(category);
                     return new CategoryAccuracyResponseDto(
                             category,
-                            calculateRate(count.correctCount, count.solvedCount)
+                            calculateRate(count.correctCount, count.totalCount)
                     );
                 })
                 .toList();
     }
 
-    private double calculateRate(long correctCount, long solvedCount) {
-        if (solvedCount == 0) {
-            return 0.0;
+    private int calculateRate(long correctCount, long totalCount) {
+        if (totalCount == 0) {
+            return 0;
         }
-        return (int) Math.round((correctCount * 100.0) / solvedCount);
+        return (int) Math.round((correctCount * 100.0) / totalCount);
     }
 
     // 잔디용 활동 수 세기
@@ -198,14 +216,15 @@ public class DashboardService {
 
     // 분야별 정답률 계산
     private static class AccuracyCount {
-        private long solvedCount;
+        private long totalCount;
         private long correctCount;
 
-        private void add(boolean correct) {
-            solvedCount++;
-            if (correct) {
-                correctCount++;
-            }
+        private void increaseTotalCount() {
+            totalCount++;
+        }
+
+        private void increaseCorrectCount() {
+            correctCount++;
         }
     }
 }
