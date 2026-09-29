@@ -18,5 +18,5 @@ public interface CompetitionParticipantRepository extends JpaRepository<Competit
     long countByCompetition(Competition competition);
 
     // 랭킹 - 기간(일/주/달)에 속한 대회들의 참여자 전체 조회
-    List<CompetitionParticipant> findByCompetitionIn(List<Competition> competitions);
+    List<CompetitionParticipant> findByCompetitionInAndSubmittedAtIsNotNull(List<Competition> competitions);
 }
