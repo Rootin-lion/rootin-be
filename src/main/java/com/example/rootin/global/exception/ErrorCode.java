@@ -13,6 +13,7 @@ public enum ErrorCode {
     NOT_FOUND(404, "C404", "정보를 찾을 수 없습니다."),
     CONFLICT(409, "C409", "요청이 현재 상태와 충돌합니다."),
     OAUTH_PROVIDER_ERROR(502, "C502", "외부 인증 서비스 처리에 실패했습니다."),
+    INVALID_OAUTH_REDIRECT_URI(400, "C400-6", "허용되지 않은 OAuth Redirect URI입니다."),
     INVALID_JWT_SECRET(500, "C503", "JWT Secret 설정이 올바르지 않습니다."),
     INTERNAL_SERVER_ERROR(500, "C500", "서버 오류가 발생했습니다."),
 

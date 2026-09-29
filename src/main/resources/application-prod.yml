@@ -4,8 +4,11 @@ spring:
       ddl-auto: validate
     show-sql: false
 
-kakao:
-  redirect-uri: ${KAKAO_REDIRECT_URI}
-
-google:
-  redirect-uri: ${GOOGLE_REDIRECT_URI}
+oauth:
+  redirect-uris:
+    kakao:
+      - http://localhost:3000/oauth/kakao/callback
+      - ${KAKAO_REDIRECT_URI}
+    google:
+      - http://localhost:3000/oauth/google/callback
+      - ${GOOGLE_REDIRECT_URI}
