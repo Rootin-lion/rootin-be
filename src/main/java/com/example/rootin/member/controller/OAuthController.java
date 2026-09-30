@@ -24,15 +24,21 @@ public class OAuthController {
 
     @GetMapping("/kakao")
     @Operation(summary = "카카오 로그인")
-    public ResponseEntity<ApiResponse<TokenResponseDto>> kakaoLogin(@RequestParam String code) {
-        OAuthService.TokenIssueResult result = oauthService.kakaoLogin(code);
+    public ResponseEntity<ApiResponse<TokenResponseDto>> kakaoLogin(
+            @RequestParam String code,
+            @RequestParam String redirectUri
+    ) {
+        OAuthService.TokenIssueResult result = oauthService.kakaoLogin(code, redirectUri);
         return buildTokenResponse(result);
     }
 
     @GetMapping("/google")
     @Operation(summary = "구글 로그인")
-    public ResponseEntity<ApiResponse<TokenResponseDto>> googleLogin(@RequestParam String code) {
-        OAuthService.TokenIssueResult result = oauthService.googleLogin(code);
+    public ResponseEntity<ApiResponse<TokenResponseDto>> googleLogin(
+            @RequestParam String code,
+            @RequestParam String redirectUri
+    ) {
+        OAuthService.TokenIssueResult result = oauthService.googleLogin(code, redirectUri);
         return buildTokenResponse(result);
     }
 
