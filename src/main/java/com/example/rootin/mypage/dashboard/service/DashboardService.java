@@ -54,8 +54,15 @@ public class DashboardService {
                 competitionProblemSubmissionRepository.findCompletedSubmissionsByMemberId(memberId);
         List<Interview> completedInterviews = interviewRepository
                 .findByMemberIdAndStatusAndCompletedAtIsNotNull(memberId, InterviewStatus.COMPLETED);
+        List<CompetitionProblem> completedCompetitionProblems = completedCompetitions.isEmpty()
+                ? List.of()
+                : competitionProblemRepository.findByCompetitionIn(
+                        completedCompetitions.stream()
+                                .map(CompetitionParticipant::getCompetition)
+                                .toList()
+                );
 
-        long totalSolvedCount = submissions.size();
+        long totalSolvedCount = completedCompetitionProblems.size();
         long correctCount = submissions.stream()
                 .filter(CompetitionProblemSubmission::isCorrect)
                 .count();
@@ -66,7 +73,7 @@ public class DashboardService {
                 member.getPoint(),
                 calculateStreakDays(completedCompetitions),
                 createDailyActivities(completedCompetitions, completedInterviews),
-                createCategoryAccuracies(completedCompetitions, submissions),
+                createCategoryAccuracies(completedCompetitionProblems, submissions),
                 getRecentBookmarks(memberId),
                 getRecentWrongAnswers(memberId)
         );
@@ -154,7 +161,7 @@ public class DashboardService {
     }
 
     private List<CategoryAccuracyResponseDto> createCategoryAccuracies(
-            List<CompetitionParticipant> completedCompetitions, //사용자가 최종 제출한 대회 목록
+            List<CompetitionProblem> completedCompetitionProblems, // 사용자가 최종 제출한 대회의 전체 문제 목록
             List<CompetitionProblemSubmission> submissions // 해당 대회에서 사용자가 실제로 답안을 선택한 문제 목록
     ) {
         Map<InterestField, AccuracyCount> accuracyCounts =
@@ -164,16 +171,9 @@ public class DashboardService {
             accuracyCounts.put(category, new AccuracyCount());
         }
 
-        if (!completedCompetitions.isEmpty()) { // 완료한 대회에 출제된 모든 문제 조회
-            List<CompetitionProblem> competitionProblems = competitionProblemRepository.findByCompetitionIn(
-                    completedCompetitions.stream()
-                            .map(CompetitionParticipant::getCompetition)
-                            .toList()
-            );
-            for (CompetitionProblem competitionProblem : competitionProblems) { // 각 문제의 분야 확인 후 카운트 증가
-                InterestField category = competitionProblem.getProblem().getCategory();
-                accuracyCounts.get(category).increaseTotalCount();
-            }
+        for (CompetitionProblem competitionProblem : completedCompetitionProblems) {
+            InterestField category = competitionProblem.getProblem().getCategory();
+            accuracyCounts.get(category).increaseTotalCount();
         }
 
         for (CompetitionProblemSubmission submission : submissions) {
