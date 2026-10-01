@@ -1,0 +1,15 @@
+package com.example.rootin.mypage.dashboard.dto.response;
+
+import java.util.List;
+
+public record DashboardResponseDto(
+        long totalSolvedCounts,
+        int accuracyRate,
+        long points,
+        int streakDays,
+        List<DailyActivityResponseDto> dailyActivities,
+        List<CategoryAccuracyResponseDto> categoryAccuracies,
+        List<BookmarkResponseDto> bookmarks,
+        List<WrongAnswerResponseDto> wrongAnswers
+) {
+}
