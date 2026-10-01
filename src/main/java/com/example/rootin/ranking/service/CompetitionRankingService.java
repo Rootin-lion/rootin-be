@@ -3,7 +3,7 @@ package com.example.rootin.ranking.service;
 import com.example.rootin.competition.domain.Competition;
 import com.example.rootin.competition.domain.CompetitionParticipant;
 import com.example.rootin.competition.exception.CompetitionNotFoundException;
-import com.example.rootin.competition.exception.CompetitionParticipantNotFoundException;
+import com.example.rootin.competition.exception.CompetitionNotSubmittedException;
 import com.example.rootin.competition.repository.CompetitionParticipantRepository;
 import com.example.rootin.competition.repository.CompetitionProblemSubmissionRepository;
 import com.example.rootin.competition.repository.CompetitionRepository;
@@ -62,7 +62,7 @@ public class CompetitionRankingService {
         return buildRanking(competitionId, period).stream()
                 .filter(item -> item.memberId().equals(memberId))
                 .findFirst()
-                .orElseThrow(CompetitionParticipantNotFoundException::new);
+                .orElseThrow(CompetitionNotSubmittedException::new);
     }
 
     // 기간(일간/주간/월간)에 해당하는 대회들의 참여자를 모아서 회원별 점수 합산 후 순위를 매김
@@ -71,7 +71,8 @@ public class CompetitionRankingService {
                 .orElseThrow(CompetitionNotFoundException::new);
 
         List<Competition> competitions = resolveCompetitions(competition, period);
-        List<CompetitionParticipant> participants = competitionParticipantRepository.findByCompetitionIn(competitions);
+        List<CompetitionParticipant> participants =
+                competitionParticipantRepository.findByCompetitionInAndSubmittedAtIsNotNull(competitions);
 
         Map<Long, Integer> scoreByMember = new HashMap<>();
         Map<Long, LocalDateTime> earliestSubmittedAtByMember = new HashMap<>();
@@ -83,19 +84,18 @@ public class CompetitionRankingService {
 
             scoreByMember.merge(participant.getMemberId(), score, Integer::sum);
 
-            if (participant.getSubmittedAt() != null) {
-                earliestSubmittedAtByMember.merge(
-                        participant.getMemberId(),
-                        participant.getSubmittedAt(),
-                        (a, b) -> a.isBefore(b) ? a : b
-                );
-            }
+            scoreByMember.merge(participant.getMemberId(), score, Integer::sum);
+            earliestSubmittedAtByMember.merge(
+                    participant.getMemberId(),
+                    participant.getSubmittedAt(),
+                    (a, b) -> a.isBefore(b) ? a : b
+            );
         }
 
         List<Long> orderedMemberIds = scoreByMember.entrySet().stream()
                 .sorted(
                         Map.Entry.<Long, Integer>comparingByValue().reversed()
-                                .thenComparing(entry -> earliestSubmittedAtByMember.getOrDefault(entry.getKey(), LocalDateTime.MAX))
+                                .thenComparing(entry -> earliestSubmittedAtByMember.get(entry.getKey()))
                 )
                 .map(Map.Entry::getKey)
                 .toList();

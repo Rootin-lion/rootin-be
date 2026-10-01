@@ -29,6 +29,7 @@ public class OAuthService {
 
     private final MemberRepository memberRepository;
     private final JwtTokenProvider jwtTokenProvider;
+    private final OAuthRedirectUriValidator oauthRedirectUriValidator;
     private final WebClient webClient = WebClient.create();
 
     @Value("${kakao.client-id}")
@@ -37,21 +38,16 @@ public class OAuthService {
     @Value("${kakao.client-secret}")
     private String kakaoClientSecret;
 
-    @Value("${kakao.redirect-uri}")
-    private String kakaoRedirectUri;
-
     @Value("${google.client-id}")
     private String googleClientId;
 
     @Value("${google.client-secret}")
     private String googleClientSecret;
 
-    @Value("${google.redirect-uri}")
-    private String googleRedirectUri;
-
     @Transactional
-    public TokenIssueResult kakaoLogin(String code) {
-        String accessToken = requestKakaoAccessToken(normalizeCode(code));
+    public TokenIssueResult kakaoLogin(String code, String redirectUri) { //URI 검증 요청
+        String validatedRedirectUri = oauthRedirectUriValidator.validateKakao(redirectUri);
+        String accessToken = requestKakaoAccessToken(normalizeCode(code), validatedRedirectUri);
         KakaoUserInfo userInfo = requestKakaoUserInfo(accessToken);
 
         String providerId = String.valueOf(userInfo.id());
@@ -62,8 +58,9 @@ public class OAuthService {
     }
 
     @Transactional
-    public TokenIssueResult googleLogin(String code) {
-        String accessToken = requestGoogleAccessToken(normalizeCode(code));
+    public TokenIssueResult googleLogin(String code, String redirectUri) {
+        String validatedRedirectUri = oauthRedirectUriValidator.validateGoogle(redirectUri);
+        String accessToken = requestGoogleAccessToken(normalizeCode(code), validatedRedirectUri);
         GoogleUserInfo userInfo = requestGoogleUserInfo(accessToken);
 
         return issueTokens(
@@ -128,12 +125,12 @@ public class OAuthService {
         );
     }
 
-    private String requestKakaoAccessToken(String code) {
+    private String requestKakaoAccessToken(String code, String redirectUri) {
         MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
 
         body.add("grant_type", "authorization_code");
         body.add("client_id", kakaoClientId);
-        body.add("redirect_uri", kakaoRedirectUri);
+        body.add("redirect_uri", redirectUri);
         body.add("code", code);
 
         if (kakaoClientSecret != null && !kakaoClientSecret.isBlank()) {
@@ -184,12 +181,12 @@ public class OAuthService {
         return response;
     }
 
-    private String requestGoogleAccessToken(String code) {
+    private String requestGoogleAccessToken(String code, String redirectUri) {
         MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
 
         body.add("grant_type", "authorization_code");
         body.add("client_id", googleClientId);
-        body.add("redirect_uri", googleRedirectUri);
+        body.add("redirect_uri", redirectUri);
         body.add("code", code);
 
         if (googleClientSecret != null && !googleClientSecret.isBlank()) {

@@ -33,3 +33,5 @@ public interface CompetitionParticipantRepository extends JpaRepository<Competit
             """)
     List<CompetitionParticipant> findCompletedByMemberId(@Param("memberId") Long memberId);
 }
+    List<CompetitionParticipant> findByCompetitionInAndSubmittedAtIsNotNull(List<Competition> competitions);
+}

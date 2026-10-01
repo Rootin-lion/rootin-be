@@ -11,5 +11,6 @@ public record CompetitionTodayResponse(
         LocalDateTime startAt,
         LocalDateTime endAt,
         CompetitionStatus status,
-        long remainingSeconds
+        long remainingSeconds,
+        long participantCount
 ) {}

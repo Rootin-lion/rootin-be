@@ -22,6 +22,7 @@ public class CompetitionService {
 
     private static final long PROBLEM_TIME_LIMIT_MINUTES = 30; // 문제 풀이 시간 30분 제한
     private static final int PROBLEM_COUNT = 10; // 대회 문제 10개
+    private static final long SUBMIT_GRACE_SECONDS = 10; // 자동 제출 네트워크 지연 허용 시간
 
     private final CompetitionRepository competitionRepository;
     private final CompetitionParticipantRepository competitionParticipantRepository;
@@ -43,13 +44,16 @@ public class CompetitionService {
             case CLOSED -> 0;
         };
 
+        long participantCount = competitionParticipantRepository.countByCompetition(competition);
+
         return new CompetitionTodayResponse(
                 competition.getId(),
                 competition.getCompetitionDate(),
                 competition.getStartAt(),
                 competition.getEndAt(),
                 status,
-                remainingSeconds
+                remainingSeconds,
+                participantCount
         );
     }
 
@@ -233,10 +237,15 @@ public class CompetitionService {
                 .findByMemberIdAndCompetition(memberId, competition)
                 .orElseThrow(CompetitionParticipantNotFoundException::new);
 
-        if (participant.getSubmittedAt() != null) {
-            throw new CompetitionAlreadySubmittedException();
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime expiresAt = calculateExpiresAt(participant.getStartedAt(), competition);
+
+        // 마감 + 네트워크 지연 시간이 지나면 제출 불가
+        if (now.isAfter(expiresAt.plusSeconds(SUBMIT_GRACE_SECONDS))) {
+            throw new CompetitionTimeExpiredException();
         }
-        participant.submit(LocalDateTime.now());
+        // 네트워크 지연 시간 안에 도착한 자동 제출은 마감 시각으로 기록
+        participant.submit(now.isAfter(expiresAt) ? expiresAt : now);
 
         return new CompetitionSubmitResponse(participant.getId(), participant.getSubmittedAt());
     }
