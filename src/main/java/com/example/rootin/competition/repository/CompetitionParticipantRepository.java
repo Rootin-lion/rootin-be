@@ -32,6 +32,6 @@ public interface CompetitionParticipantRepository extends JpaRepository<Competit
             ORDER BY participant.competition.competitionDate DESC
             """)
     List<CompetitionParticipant> findCompletedByMemberId(@Param("memberId") Long memberId);
-}
+
     List<CompetitionParticipant> findByCompetitionInAndSubmittedAtIsNotNull(List<Competition> competitions);
 }
