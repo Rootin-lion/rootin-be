@@ -1,5 +1,6 @@
 package com.example.rootin.competition.service;
 
+import com.example.rootin.bookmark.repository.CompetitionProblemBookmarkRepository;
 import com.example.rootin.competition.domain.*;
 import com.example.rootin.competition.dto.response.CompetitionProblemSolutionResponse;
 import com.example.rootin.competition.dto.response.CompetitionResultResponse;
@@ -32,6 +33,7 @@ public class CompetitionResultService {
     private final CompetitionProblemRepository competitionProblemRepository;
     private final CompetitionProblemSubmissionRepository competitionProblemSubmissionRepository;
     private final ProblemOptionRepository problemOptionRepository;
+    private final CompetitionProblemBookmarkRepository competitionProblemBookmarkRepository;
 
     @Transactional(readOnly = true)
     public CompetitionResultResponse getResult(Long competitionId, Long memberId) {
@@ -145,6 +147,8 @@ public class CompetitionResultService {
         Long selectedOptionId = submission.map(s -> s.getSelectedOption().getId()).orElse(null);
         boolean correct = submission.map(CompetitionProblemSubmission::isCorrect).orElse(false);
 
+        boolean bookmarked = competitionProblemBookmarkRepository.existsByMemberIdAndProblem(memberId, problem);
+
         return new CompetitionProblemSolutionResponse(
                 competitionProblem.getId(),
                 problem.getId(),
@@ -155,7 +159,8 @@ public class CompetitionResultService {
                 problem.getExplanation(),
                 options,
                 selectedOptionId,
-                correct
+                correct,
+                bookmarked
         );
     }
 
