@@ -14,7 +14,8 @@ public record CompetitionProblemSolutionResponse(
         String problemExplanation,
         List<OptionResponse> options,
         Long selectedOptionId,
-        boolean correct
+        boolean correct,
+        boolean bookmarked
 ) {
     public record OptionResponse(
             Long optionId,

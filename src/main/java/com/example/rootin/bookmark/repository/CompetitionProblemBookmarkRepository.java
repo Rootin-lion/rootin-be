@@ -27,4 +27,6 @@ public interface CompetitionProblemBookmarkRepository extends JpaRepository<Comp
             @Param("memberId") Long memberId,
             Pageable pageable
     );
+
+    boolean existsByMemberIdAndProblem(Long memberId, Problem problem);
 }
