@@ -1,6 +1,8 @@
 package com.example.rootin.mypage.errornote.service;
 
+import com.example.rootin.competition.domain.CompetitionProblemSubmission;
 import com.example.rootin.competition.domain.ProblemOption;
+import com.example.rootin.competition.repository.CompetitionProblemRepository;
 import com.example.rootin.competition.repository.CompetitionProblemSubmissionRepository;
 import com.example.rootin.competition.repository.ProblemOptionRepository;
 import com.example.rootin.global.common.PageResponse;
@@ -25,6 +27,7 @@ public class ErrorNoteService {
     private static final int ERROR_NOTE_PAGE_SIZE = 4;
 
     private final CompetitionProblemSubmissionRepository submissionRepository;
+    private final CompetitionProblemRepository competitionProblemRepository;
     private final ProblemOptionRepository problemOptionRepository;
 
     public PageResponse<ErrorNoteResponseDto> getErrorNotes(Long memberId, int page) {
@@ -32,13 +35,25 @@ public class ErrorNoteService {
             throw new CustomException(ErrorCode.BAD_REQUEST);
         }
 
-        var submissions = submissionRepository.findWrongSubmissionsByMemberId(
+        var competitionProblems = competitionProblemRepository.findErrorNoteProblemsByMemberId(
                 memberId,
                 PageRequest.of(page - 1, ERROR_NOTE_PAGE_SIZE)
         );
 
-        var problemIds = submissions.getContent().stream()
-                .map(submission -> submission.getCompetitionProblem().getProblem().getId())
+        var competitionProblemIds = competitionProblems.getContent().stream()
+                .map(competitionProblem -> competitionProblem.getId())
+                .toList();
+
+        var submissionByCompetitionProblemId = competitionProblemIds.isEmpty()
+                ? Map.<Long, CompetitionProblemSubmission>of()
+                : submissionRepository.findByMemberIdAndCompetitionProblemIds(memberId, competitionProblemIds).stream()
+                        .collect(Collectors.toMap(
+                                submission -> submission.getCompetitionProblem().getId(),
+                                Function.identity()
+                        ));
+
+        var problemIds = competitionProblems.getContent().stream()
+                .map(competitionProblem -> competitionProblem.getProblem().getId())
                 .distinct()
                 .toList();
 
@@ -50,13 +65,17 @@ public class ErrorNoteService {
                                 Function.identity()
                         ));
 
-        Page<ErrorNoteResponseDto> responsePage = submissions.map(submission -> {
-            Long problemId = submission.getCompetitionProblem().getProblem().getId();
+        Page<ErrorNoteResponseDto> responsePage = competitionProblems.map(competitionProblem -> {
+            Long problemId = competitionProblem.getProblem().getId();
             ProblemOption correctOption = correctOptionByProblemId.get(problemId);
             if (correctOption == null) {
                 throw new CustomException(ErrorCode.NOT_FOUND);
             }
-            return ErrorNoteResponseDto.from(submission, correctOption);
+            return ErrorNoteResponseDto.from(
+                    competitionProblem,
+                    submissionByCompetitionProblemId.get(competitionProblem.getId()),
+                    correctOption
+            );
         });
 
         return PageResponse.of(responsePage);

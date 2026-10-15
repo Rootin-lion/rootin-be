@@ -1,5 +1,6 @@
 package com.example.rootin.mypage.errornote.dto.response;
 
+import com.example.rootin.competition.domain.CompetitionProblem;
 import com.example.rootin.competition.domain.CompetitionProblemSubmission;
 import com.example.rootin.competition.domain.Problem;
 import com.example.rootin.competition.domain.ProblemOption;
@@ -19,10 +20,10 @@ public record ErrorNoteResponseDto(
         String explanation
 ) {
     public static ErrorNoteResponseDto from(
+            CompetitionProblem competitionProblem,
             CompetitionProblemSubmission submission,
             ProblemOption correctOption
     ) {
-        var competitionProblem = submission.getCompetitionProblem();
         Problem problem = competitionProblem.getProblem();
 
         return new ErrorNoteResponseDto(
@@ -32,7 +33,7 @@ public record ErrorNoteResponseDto(
                 problem.getTitle(),
                 competitionProblem.getCompetition().getCompetitionDate(),
                 problem.getContent(),
-                submission.getSelectedOption().getOptionContent(),
+                submission == null ? null : submission.getSelectedOption().getOptionContent(),
                 correctOption.getOptionContent(),
                 problem.getExplanation()
         );

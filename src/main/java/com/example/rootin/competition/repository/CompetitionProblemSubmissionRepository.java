@@ -4,8 +4,6 @@ import com.example.rootin.competition.domain.CompetitionParticipant;
 import com.example.rootin.competition.domain.CompetitionProblem;
 import com.example.rootin.competition.domain.CompetitionProblemSubmission;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -59,33 +57,18 @@ public interface CompetitionProblemSubmissionRepository extends JpaRepository<Co
             PageRequest pageable
     );
 
-    // 마이페이지 - 오답노트. 오답을 페이지 단위로 조회
-    @Query(
-            value = """
-                    SELECT submission
-                    FROM CompetitionProblemSubmission submission
-                    JOIN FETCH submission.selectedOption
-                    JOIN FETCH submission.competitionProblem competitionProblem
-                    JOIN FETCH competitionProblem.problem
-                    JOIN FETCH competitionProblem.competition
-                    JOIN FETCH submission.competitionParticipant participant
-                    WHERE participant.memberId = :memberId
-                      AND participant.submittedAt IS NOT NULL
-                      AND submission.isCorrect = false
-                    ORDER BY participant.submittedAt DESC, submission.id DESC
-                    """,
-            countQuery = """
-                    SELECT COUNT(submission)
-                    FROM CompetitionProblemSubmission submission
-                    JOIN submission.competitionParticipant participant
-                    WHERE participant.memberId = :memberId
-                      AND participant.submittedAt IS NOT NULL
-                      AND submission.isCorrect = false
-                    """
-    )
-    Page<CompetitionProblemSubmission> findWrongSubmissionsByMemberId(
+    // 마이페이지 - 오답노트. 조회된 문제의 선택 답안을 일괄 조회
+    @Query("""
+            SELECT submission
+            FROM CompetitionProblemSubmission submission
+            JOIN FETCH submission.selectedOption
+            JOIN submission.competitionParticipant participant
+            WHERE participant.memberId = :memberId
+              AND submission.competitionProblem.id IN :competitionProblemIds
+            """)
+    List<CompetitionProblemSubmission> findByMemberIdAndCompetitionProblemIds(
             @Param("memberId") Long memberId,
-            Pageable pageable
+            @Param("competitionProblemIds") List<Long> competitionProblemIds
     );
 }
 
