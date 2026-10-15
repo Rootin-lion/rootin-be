@@ -23,4 +23,7 @@ public interface CompetitionRepository extends JpaRepository<Competition, Long> 
 
     // 스케줄러 - 해당 날짜 대회가 이미 있는지 확인 (중복 생성 방지)
     boolean existsByCompetitionDate(LocalDate competitionDate);
+
+    // 결과 화면 - 순위 변동 계산용 직전 대회 조회
+    Optional<Competition> findFirstByCompetitionDateBeforeOrderByCompetitionDateDesc(LocalDate competitionDate);
 }

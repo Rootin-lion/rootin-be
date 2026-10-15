@@ -13,6 +13,8 @@ public record CompetitionResultResponse(
         int correctCount,
         int totalCount,
         long solvingTimeSeconds,
+        int myRank,
+        Integer rankChange,
         List<ProblemResultResponse> problemResults,
         List<InterestField> strongCategories,
         List<InterestField> weakCategories
