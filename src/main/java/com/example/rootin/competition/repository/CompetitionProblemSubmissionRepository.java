@@ -39,7 +39,7 @@ public interface CompetitionProblemSubmissionRepository extends JpaRepository<Co
             @Param("memberId") Long memberId
     );
 
-    // 마이페이지 - 틀린 문제를 최신순으로 조회
+    // 마이페이지 - 대시보드. 틀린 문제를 최신순으로 조회
     @Query("""
             SELECT submission
             FROM CompetitionProblemSubmission submission
@@ -55,6 +55,20 @@ public interface CompetitionProblemSubmissionRepository extends JpaRepository<Co
     List<CompetitionProblemSubmission> findRecentWrongSubmissionsByMemberId(
             @Param("memberId") Long memberId,
             PageRequest pageable
+    );
+
+    // 마이페이지 - 오답노트. 조회된 문제의 선택 답안을 일괄 조회
+    @Query("""
+            SELECT submission
+            FROM CompetitionProblemSubmission submission
+            JOIN FETCH submission.selectedOption
+            JOIN submission.competitionParticipant participant
+            WHERE participant.memberId = :memberId
+              AND submission.competitionProblem.id IN :competitionProblemIds
+            """)
+    List<CompetitionProblemSubmission> findByMemberIdAndCompetitionProblemIds(
+            @Param("memberId") Long memberId,
+            @Param("competitionProblemIds") List<Long> competitionProblemIds
     );
 }
 

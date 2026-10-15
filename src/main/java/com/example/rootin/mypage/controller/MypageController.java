@@ -4,6 +4,8 @@ import com.example.rootin.global.common.ApiResponse;
 import com.example.rootin.global.common.PageResponse;
 import com.example.rootin.mypage.dashboard.dto.response.DashboardResponseDto;
 import com.example.rootin.mypage.dashboard.service.DashboardService;
+import com.example.rootin.mypage.errornote.dto.response.ErrorNoteResponseDto;
+import com.example.rootin.mypage.errornote.service.ErrorNoteService;
 import com.example.rootin.mypage.report.dto.response.MypageReportResponseDto;
 import com.example.rootin.mypage.report.service.MypageReportService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -21,6 +23,7 @@ public class MypageController {
 
     private final DashboardService dashboardService;
     private final MypageReportService mypageReportService;
+    private final ErrorNoteService errorNoteService;
 
     @GetMapping("/dashboard")
     @Operation(summary = "대시보드 조회")
@@ -37,5 +40,14 @@ public class MypageController {
             @RequestParam(defaultValue = "1") int page
     ) {
         return ApiResponse.success(mypageReportService.getReports(memberId, page));
+    }
+
+    @GetMapping("/errornotes")
+    @Operation(summary = "대회 문제 오답 노트 조회")
+    public ApiResponse<PageResponse<ErrorNoteResponseDto>> getErrorNotes(
+            @AuthenticationPrincipal Long memberId,
+            @RequestParam(defaultValue = "1") int page
+    ) {
+        return ApiResponse.success(errorNoteService.getErrorNotes(memberId, page));
     }
 }
