@@ -83,8 +83,6 @@ public class CompetitionRankingService {
             int score = correctCount * 10;
 
             scoreByMember.merge(participant.getMemberId(), score, Integer::sum);
-
-            scoreByMember.merge(participant.getMemberId(), score, Integer::sum);
             earliestSubmittedAtByMember.merge(
                     participant.getMemberId(),
                     participant.getSubmittedAt(),
