@@ -81,7 +81,8 @@ public class DashboardService {
 
     private List<BookmarkResponseDto> getRecentBookmarks(Long memberId) {
         return competitionProblemBookmarkRepository
-                .findRecentByMemberId(memberId, PageRequest.of(0, RECENT_PROBLEM_LIMIT))
+                .findByMemberIdOrderByCreatedAtDescIdDesc(memberId, PageRequest.of(0, RECENT_PROBLEM_LIMIT))
+                .getContent()
                 .stream()
                 .map(CompetitionProblemBookmark::getProblem)
                 .map(problem -> new BookmarkResponseDto(
