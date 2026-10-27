@@ -9,6 +9,7 @@ import java.time.LocalDate;
 public record MypageBookmarkResponseDto(
         Long competitionId,
         Long competitionProblemId,
+        Long problemId,
         InterestField category,
         String title,
         LocalDate participationDate,
@@ -20,6 +21,7 @@ public record MypageBookmarkResponseDto(
         return new MypageBookmarkResponseDto(
                 competitionProblem.getCompetition().getId(),
                 competitionProblem.getId(),
+                problem.getId(),
                 problem.getCategory(),
                 problem.getTitle(),
                 competitionProblem.getCompetition().getCompetitionDate(),
