@@ -10,6 +10,8 @@ import com.example.rootin.competition.exception.CompetitionParticipantNotFoundEx
 import com.example.rootin.competition.exception.CompetitionProblemNotFoundException;
 import com.example.rootin.competition.repository.*;
 import com.example.rootin.member.domain.InterestField;
+import com.example.rootin.ranking.dto.response.CompetitionRankingItemResponse;
+import com.example.rootin.ranking.service.CompetitionRankingService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,6 +36,7 @@ public class CompetitionResultService {
     private final CompetitionProblemSubmissionRepository competitionProblemSubmissionRepository;
     private final ProblemOptionRepository problemOptionRepository;
     private final CompetitionProblemBookmarkRepository competitionProblemBookmarkRepository;
+    private final CompetitionRankingService competitionRankingService;
 
     @Transactional(readOnly = true)
     public CompetitionResultResponse getResult(Long competitionId, Long memberId) {
@@ -91,6 +94,12 @@ public class CompetitionResultService {
 
         long solvingTimeSeconds = Duration.between(participant.getStartedAt(), participant.getSubmittedAt()).getSeconds();
 
+        int myRank = competitionRankingService.findMyDailyRanking(competitionId, memberId)
+                .map(CompetitionRankingItemResponse::rank)
+                .orElseThrow(CompetitionNotSubmittedException::new);
+
+        Integer rankChange = calculateRankChange(competition, memberId, myRank);
+
         return new CompetitionResultResponse(
                 competition.getCompetitionDate(),
                 correctCount * 10,
@@ -98,10 +107,21 @@ public class CompetitionResultService {
                 correctCount,
                 PROBLEM_COUNT,
                 solvingTimeSeconds,
+                myRank,
+                rankChange,
                 problemResults,
                 strongCategories,
                 weakCategories
         );
+    }
+
+    // 직전 대회 순위 - 오늘 순위 (직전 대회가 없거나 참여하지 않았으면 null)
+    private Integer calculateRankChange(Competition competition, Long memberId, int myRank) {
+        return competitionRepository
+                .findFirstByCompetitionDateBeforeOrderByCompetitionDateDesc(competition.getCompetitionDate())
+                .flatMap(previous -> competitionRankingService.findMyDailyRanking(previous.getId(), memberId))
+                .map(previousRanking -> previousRanking.rank() - myRank)
+                .orElse(null);
     }
 
     private List<InterestField> pickCategoriesByAccuracy(Map<InterestField, int[]> categoryStats, boolean strongest) {

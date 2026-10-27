@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -63,6 +64,13 @@ public class CompetitionRankingService {
                 .filter(item -> item.memberId().equals(memberId))
                 .findFirst()
                 .orElseThrow(CompetitionNotSubmittedException::new);
+    }
+    // 결과 화면용 일간 순위 조회 - 제출하지 않았으면 empty
+    @Transactional(readOnly = true)
+    public Optional<CompetitionRankingItemResponse> findMyDailyRanking(Long competitionId, Long memberId) {
+        return buildRanking(competitionId, RankingPeriod.DAILY).stream()
+                .filter(item -> item.memberId().equals(memberId))
+                .findFirst();
     }
 
     // 기간(일간/주간/월간)에 해당하는 대회들의 참여자를 모아서 회원별 점수 합산 후 순위를 매김
