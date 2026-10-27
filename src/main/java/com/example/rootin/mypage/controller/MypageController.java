@@ -2,6 +2,8 @@ package com.example.rootin.mypage.controller;
 
 import com.example.rootin.global.common.ApiResponse;
 import com.example.rootin.global.common.PageResponse;
+import com.example.rootin.mypage.bookmark.dto.response.MypageBookmarkResponseDto;
+import com.example.rootin.mypage.bookmark.service.MypageBookmarkService;
 import com.example.rootin.mypage.dashboard.dto.response.DashboardResponseDto;
 import com.example.rootin.mypage.dashboard.service.DashboardService;
 import com.example.rootin.mypage.errornote.dto.response.ErrorNoteResponseDto;
@@ -24,6 +26,7 @@ public class MypageController {
     private final DashboardService dashboardService;
     private final MypageReportService mypageReportService;
     private final ErrorNoteService errorNoteService;
+    private final MypageBookmarkService mypageBookmarkService;
 
     @GetMapping("/dashboard")
     @Operation(summary = "대시보드 조회")
@@ -49,5 +52,14 @@ public class MypageController {
             @RequestParam(defaultValue = "1") int page
     ) {
         return ApiResponse.success(errorNoteService.getErrorNotes(memberId, page));
+    }
+
+    @GetMapping("/bookmarks")
+    @Operation(summary = "북마크 문제 조회")
+    public ApiResponse<PageResponse<MypageBookmarkResponseDto>> getBookmarks(
+            @AuthenticationPrincipal Long memberId,
+            @RequestParam(defaultValue = "1") int page
+    ) {
+        return ApiResponse.success(mypageBookmarkService.getBookmarks(memberId, page));
     }
 }

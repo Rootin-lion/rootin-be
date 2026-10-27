@@ -61,4 +61,22 @@ public interface CompetitionProblemRepository extends JpaRepository<CompetitionP
             @Param("memberId") Long memberId,
             Pageable pageable
     );
+
+    // 마이페이지 - 북마크페이지. problemId를 이용해 대회 정보 조회
+    @Query("""
+            SELECT competitionProblem
+            FROM CompetitionProblem competitionProblem
+            JOIN FETCH competitionProblem.problem problem
+            JOIN FETCH competitionProblem.competition competition
+            JOIN CompetitionParticipant participant
+              ON participant.competition = competition
+            WHERE participant.memberId = :memberId
+              AND participant.submittedAt IS NOT NULL
+              AND problem.id IN :problemIds
+            ORDER BY participant.submittedAt DESC, competitionProblem.id DESC
+            """)
+    List<CompetitionProblem> findCompletedByMemberIdAndProblemIds(
+            @Param("memberId") Long memberId,
+            @Param("problemIds") List<Long> problemIds
+    );
 }
