@@ -8,5 +8,6 @@ public record CompetitionRankingItemResponse(
         String nickname,
         String imgUrl,
         int score,
+        int point,
         LocalDateTime submittedAt
 ) {}

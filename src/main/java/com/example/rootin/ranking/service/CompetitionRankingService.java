@@ -11,6 +11,7 @@ import com.example.rootin.global.common.PageResponse;
 import com.example.rootin.member.entity.Member;
 import com.example.rootin.member.repository.MemberRepository;
 import com.example.rootin.ranking.domain.RankingPeriod;
+import com.example.rootin.ranking.domain.RankingPointPolicy;
 import com.example.rootin.ranking.dto.response.CompetitionRankingItemResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -23,10 +24,12 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -73,6 +76,12 @@ public class CompetitionRankingService {
                 .findFirst();
     }
 
+    // 포인트 정산용 - 순위 전체 조회
+    @Transactional(readOnly = true)
+    public List<CompetitionRankingItemResponse> getRankingItems(Long competitionId, RankingPeriod period) {
+        return buildRanking(competitionId, period);
+    }
+
     // 기간(일간/주간/월간)에 해당하는 대회들의 참여자를 모아서 회원별 점수 합산 후 순위를 매김
     private List<CompetitionRankingItemResponse> buildRanking(Long competitionId, RankingPeriod period) {
         Competition competition = competitionRepository.findById(competitionId)
@@ -82,21 +91,45 @@ public class CompetitionRankingService {
         List<CompetitionParticipant> participants =
                 competitionParticipantRepository.findByCompetitionInAndSubmittedAtIsNotNull(competitions);
 
-        Map<Long, Integer> scoreByMember = new HashMap<>();
-        Map<Long, LocalDateTime> earliestSubmittedAtByMember = new HashMap<>();
-
+        // 참여자별 점수 (정답 수 * 10)
+        Map<CompetitionParticipant, Integer> scoreByParticipant = new HashMap<>();
         for (CompetitionParticipant participant : participants) {
             int correctCount = competitionProblemSubmissionRepository
                     .countByCompetitionParticipantAndIsCorrectTrue(participant);
-            int score = correctCount * 10;
+            scoreByParticipant.put(participant, correctCount * 10);
+        }
 
-            scoreByMember.merge(participant.getMemberId(), score, Integer::sum);
+        Map<Long, Integer> scoreByMember = new HashMap<>();
+        Map<Long, Integer> pointByMember = new HashMap<>();
+        Map<Long, LocalDateTime> earliestSubmittedAtByMember = new HashMap<>();
+
+        for (CompetitionParticipant participant : participants) {
+            scoreByMember.merge(participant.getMemberId(), scoreByParticipant.get(participant), Integer::sum);
             earliestSubmittedAtByMember.merge(
                     participant.getMemberId(),
                     participant.getSubmittedAt(),
                     (a, b) -> a.isBefore(b) ? a : b
             );
         }
+
+        // 포인트 - 대회(일간)별 순위로 계산해서 기간 내 합산
+        participants.stream()
+                .collect(Collectors.groupingBy(participant -> participant.getCompetition().getId()))
+                .values()
+                .forEach(dailyParticipants -> {
+                    List<CompetitionParticipant> ordered = dailyParticipants.stream()
+                            .sorted(Comparator.<CompetitionParticipant>comparingInt(scoreByParticipant::get).reversed()
+                                    .thenComparing(CompetitionParticipant::getSubmittedAt))
+                            .toList();
+                    for (int i = 0; i < ordered.size(); i++) {
+                        CompetitionParticipant participant = ordered.get(i);
+                        // 종료 후 정산된 대회는 확정 포인트, 진행 중이면 현재 순위 기준 실시간 포인트
+                        int point = participant.getRewardPoint() != null
+                                ? participant.getRewardPoint()
+                                : RankingPointPolicy.pointOf(i + 1);
+                        pointByMember.merge(participant.getMemberId(), point, Integer::sum);
+                    }
+                });
 
         List<Long> orderedMemberIds = scoreByMember.entrySet().stream()
                 .sorted(
@@ -116,6 +149,7 @@ public class CompetitionRankingService {
                     member != null ? member.getNickname() : null,
                     member != null ? member.getImgUrl() : null,
                     scoreByMember.get(memberId),
+                    pointByMember.getOrDefault(memberId, 0),
                     earliestSubmittedAtByMember.get(memberId)
             ));
         }
