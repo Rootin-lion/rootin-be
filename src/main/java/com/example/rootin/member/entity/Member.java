@@ -130,4 +130,8 @@ public class Member {
         this.profileCompleted = true;
     }
 
+    // 대회 종료 후 랭킹 포인트 적립
+    public void addPoint(long amount) {
+        this.point += amount;
+    }
 }

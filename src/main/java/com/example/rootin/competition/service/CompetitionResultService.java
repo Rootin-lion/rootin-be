@@ -94,9 +94,9 @@ public class CompetitionResultService {
 
         long solvingTimeSeconds = Duration.between(participant.getStartedAt(), participant.getSubmittedAt()).getSeconds();
 
-        int myRank = competitionRankingService.findMyDailyRanking(competitionId, memberId)
-                .map(CompetitionRankingItemResponse::rank)
+        CompetitionRankingItemResponse myRanking = competitionRankingService.findMyDailyRanking(competitionId, memberId)
                 .orElseThrow(CompetitionNotSubmittedException::new);
+        int myRank = myRanking.rank();
 
         Integer rankChange = calculateRankChange(competition, memberId, myRank);
 
@@ -114,6 +114,7 @@ public class CompetitionResultService {
                 solvingTimeSeconds,
                 myRank,
                 rankChange,
+                myRanking.point(),
                 problemResults,
                 strongCategories,
                 weakCategories,

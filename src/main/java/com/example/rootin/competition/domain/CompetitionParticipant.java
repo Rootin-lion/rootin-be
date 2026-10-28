@@ -31,6 +31,10 @@ public class CompetitionParticipant {
     @Column(name = "submitted_at")
     private LocalDateTime submittedAt;
 
+    // 대회 종료 후 확정된 랭킹 포인트 (정산 전이면 null)
+    @Column(name = "reward_point")
+    private Integer rewardPoint;
+
     public CompetitionParticipant(Long memberId, Competition competition, LocalDateTime startedAt) {
         this.memberId = memberId;
         this.competition = competition;
@@ -39,5 +43,9 @@ public class CompetitionParticipant {
 
     public void submit(LocalDateTime submittedAt) {
         this.submittedAt = submittedAt;
+    }
+
+    public void grantRewardPoint(int rewardPoint) {
+        this.rewardPoint = rewardPoint;
     }
 }

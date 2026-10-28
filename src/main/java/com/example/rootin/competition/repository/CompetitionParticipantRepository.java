@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -35,6 +36,15 @@ public interface CompetitionParticipantRepository extends JpaRepository<Competit
 
     List<CompetitionParticipant> findByCompetitionInAndSubmittedAtIsNotNull(List<Competition> competitions);
 
+    // 포인트 정산 - 종료됐는데 아직 포인트가 확정되지 않은 대회 조회
+    @Query("""
+            SELECT DISTINCT participant.competition
+            FROM CompetitionParticipant participant
+            WHERE participant.submittedAt IS NOT NULL
+              AND participant.rewardPoint IS NULL
+              AND participant.competition.endAt < :now
+            """)
+    List<Competition> findUnsettledClosedCompetitions(@Param("now") LocalDateTime now);
     // 결과 요약 - 제출 완료한 참여자 수 (상위 % 계산용)
     long countByCompetitionAndSubmittedAtIsNotNull(Competition competition);
 }
