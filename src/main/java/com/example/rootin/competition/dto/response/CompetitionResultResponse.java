@@ -18,7 +18,9 @@ public record CompetitionResultResponse(
         int point,
         List<ProblemResultResponse> problemResults,
         List<InterestField> strongCategories,
-        List<InterestField> weakCategories
+        List<InterestField> weakCategories,
+        int accuracy,
+        int topPercent
 ) {
     public record ProblemResultResponse(
             int problemOrder,

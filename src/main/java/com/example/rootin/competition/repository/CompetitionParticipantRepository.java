@@ -45,4 +45,6 @@ public interface CompetitionParticipantRepository extends JpaRepository<Competit
               AND participant.competition.endAt < :now
             """)
     List<Competition> findUnsettledClosedCompetitions(@Param("now") LocalDateTime now);
+    // 결과 요약 - 제출 완료한 참여자 수 (상위 % 계산용)
+    long countByCompetitionAndSubmittedAtIsNotNull(Competition competition);
 }
