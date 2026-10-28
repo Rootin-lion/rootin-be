@@ -100,6 +100,11 @@ public class CompetitionResultService {
 
         Integer rankChange = calculateRankChange(competition, memberId, myRank);
 
+        // 개인 분석 - 정답률(%)과 일간 순위 기준 상위 %
+        int accuracy = (int) Math.round(correctCount * 100.0 / PROBLEM_COUNT);
+        long submittedCount = competitionParticipantRepository.countByCompetitionAndSubmittedAtIsNotNull(competition);
+        int topPercent = calculateTopPercent(myRank, submittedCount);
+
         return new CompetitionResultResponse(
                 competition.getCompetitionDate(),
                 correctCount * 10,
@@ -111,9 +116,20 @@ public class CompetitionResultService {
                 rankChange,
                 problemResults,
                 strongCategories,
-                weakCategories
+                weakCategories,
+                accuracy,
+                topPercent
         );
     }
+
+    // 상위 % = 내 순위 / 제출 인원 * 100 (올림, 1~100)
+    private int calculateTopPercent(int myRank, long submittedCount) {
+        if (submittedCount <= 0) {
+            return 100;
+        }
+        return (int) Math.min(100, Math.max(1, Math.ceil(myRank * 100.0 / submittedCount)));
+    }
+
 
     // 직전 대회 순위 - 오늘 순위 (직전 대회가 없거나 참여하지 않았으면 null)
     private Integer calculateRankChange(Competition competition, Long memberId, int myRank) {

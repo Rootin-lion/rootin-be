@@ -34,4 +34,7 @@ public interface CompetitionParticipantRepository extends JpaRepository<Competit
     List<CompetitionParticipant> findCompletedByMemberId(@Param("memberId") Long memberId);
 
     List<CompetitionParticipant> findByCompetitionInAndSubmittedAtIsNotNull(List<Competition> competitions);
+
+    // 결과 요약 - 제출 완료한 참여자 수 (상위 % 계산용)
+    long countByCompetitionAndSubmittedAtIsNotNull(Competition competition);
 }
