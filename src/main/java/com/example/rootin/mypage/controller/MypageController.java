@@ -10,13 +10,19 @@ import com.example.rootin.mypage.errornote.dto.response.ErrorNoteResponseDto;
 import com.example.rootin.mypage.errornote.service.ErrorNoteService;
 import com.example.rootin.mypage.report.dto.response.MypageReportResponseDto;
 import com.example.rootin.mypage.report.service.MypageReportService;
+import com.example.rootin.member.dto.response.MemberResponseDto;
+import com.example.rootin.mypage.profile.service.ProfileImageService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequiredArgsConstructor
@@ -27,6 +33,7 @@ public class MypageController {
     private final MypageReportService mypageReportService;
     private final ErrorNoteService errorNoteService;
     private final MypageBookmarkService mypageBookmarkService;
+    private final ProfileImageService profileImageService;
 
     @GetMapping("/dashboard")
     @Operation(summary = "대시보드 조회")
@@ -61,5 +68,14 @@ public class MypageController {
             @RequestParam(defaultValue = "1") int page
     ) {
         return ApiResponse.success(mypageBookmarkService.getBookmarks(memberId, page));
+    }
+
+    @PatchMapping(value = "/profile/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "프로필 사진 변경")
+    public ApiResponse<MemberResponseDto> updateProfileImage(
+            @AuthenticationPrincipal Long memberId,
+            @RequestPart("image") MultipartFile image
+    ) {
+        return ApiResponse.success(profileImageService.updateProfileImage(memberId, image));
     }
 }

@@ -43,7 +43,11 @@ public enum ErrorCode {
     INTERVIEW_REPORT_GENERATION_FAILED(502, "C502-2", "면접 리포트 생성에 실패했습니다."),
 
     MYPAGE_REPORT_LIST_EMPTY(404, "C404-10", "조회할 수 있는 면접 리포트가 없습니다."),
-    MYPAGE_REPORT_PAGE_NOT_FOUND(404, "C404-11", "요청한 리포트 페이지를 찾을 수 없습니다.");
+    MYPAGE_REPORT_PAGE_NOT_FOUND(404, "C404-11", "요청한 리포트 페이지를 찾을 수 없습니다."),
+
+    INVALID_PROFILE_IMAGE(400, "M400-1", "지원하지 않거나 올바르지 않은 이미지 파일입니다."),
+    PROFILE_IMAGE_TOO_LARGE(413, "M413-1", "프로필 이미지는 5MB 이하만 업로드할 수 있습니다."),
+    PROFILE_IMAGE_STORAGE_ERROR(500, "M500-1", "프로필 이미지 저장에 실패했습니다.");
 
     private final int status;
     private final String code;
