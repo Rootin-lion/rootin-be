@@ -66,7 +66,7 @@ public class InterviewController {
     ) {
         InterviewReport report = interviewReportService.createReport(memberId, interviewId);
 
-        // 이미 COMPLETED인 경우에는 다시 Gemini 호출할 필요 없음
+        // 이미 COMPLETED인 경우에는 다시 OpenAI를 호출할 필요 없음
         if (report.getStatus() == InterviewReportStatus.GENERATING) {
             interviewReportService.generateReportAsync(report.getId());
         }
