@@ -48,7 +48,7 @@ public class InterviewReportService {
                 .orElseGet(() -> interviewReportRepository.save(InterviewReport.create(interview)));
     }
 
-    // 실제 Gemini 리포트 생성
+    // 실제 OpenAI 리포트 생성
     @Async
     @Transactional
     public void generateReportAsync(Long reportId) {
